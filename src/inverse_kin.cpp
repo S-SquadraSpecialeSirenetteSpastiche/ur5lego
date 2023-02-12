@@ -14,7 +14,8 @@ int main(int argc, char** argv)
     const std::string urdf_filename = std::string("/opt/openrobots/share/example-robot-data/robots/ur_description/urdf/ur5_robot.urdf");
 
     pinocchio::Model model;
-    pinocchio::urdf::buildModel(urdf_filename, model);
+    // pinocchio::urdf::buildModel(urdf_filename, model);   // riga che erve ma distrugge tutto
+    pinocchio::buildModels::manipulator(model);
     pinocchio::Data data(model);
 
     const int JOINT_ID = 6;     // id of the last join
