@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp rospy pinocchio actionlib_msgs ac
 
 add_action_files(
     DIRECTORY action
-    FILES Move.action Fibonacci.action
+    FILES Move.action
 )
 
 generate_messages(
