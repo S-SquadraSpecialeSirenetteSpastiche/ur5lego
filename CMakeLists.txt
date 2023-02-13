@@ -5,15 +5,15 @@ project(ur5lego)
 set(pinocchio_DIR "/opt/openrobots/lib/cmake/pinocchio/")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include/eigen3 -w")
 
-find_package(catkin REQUIRED COMPONENTS roscpp rospy pinocchio actionlib_msgs)
+find_package(catkin REQUIRED COMPONENTS roscpp rospy pinocchio actionlib_msgs actionlib)
 
 add_action_files(
-  DIRECTORY action
-  FILES Fibonacci.action
+    DIRECTORY action
+    FILES Fibonacci.action
 )
 
 generate_messages(
-  DEPENDENCIES actionlib_msgs std_msgs  # Or other packages containing msgs
+    DEPENDENCIES actionlib_msgs std_msgs  # Or other packages containing msgs
 )
 
 catkin_package(
