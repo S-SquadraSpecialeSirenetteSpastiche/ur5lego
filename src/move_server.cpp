@@ -1,6 +1,15 @@
 #include <ros/ros.h>
 #include <actionlib/server/simple_action_server.h>
 #include <ur5lego/MoveAction.h>
+#include <string>
+#include <iostream>
+
+std::string getCoords(int a, int b, int c, int d, int e, int f){
+    std::string s;
+    s = "(" + std::to_string(a) + "," + std::to_string(b) + "," + std::to_string(c) + "), (" + 
+        std::to_string(d) + "," + std::to_string(e) + "," + std::to_string(f) + ")";
+    return s;
+}
 
 class MoveAction
 {
@@ -25,15 +34,17 @@ public:
 
     void executeCB(const ur5lego::MoveGoalConstPtr &goal)
     {
-        ROS_INFO("Executing... target:(%i,%i,%i), (%i,%i,%i)", goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y);
+        ROS_INFO_STREAM("Executing... target: " << getCoords(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y));
+        result_.success = true;
+        action_server_.setSucceeded(result_);
     }
 };
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "fibonacci");
+    ros::init(argc, argv, "move_server");
 
-    MoveAction fibonacci("fibonacci");
+    MoveAction moveAction("idk");
     ros::spin();
 
     return 0;

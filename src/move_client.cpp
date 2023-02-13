@@ -1,15 +1,15 @@
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
-#include <actionlib_tutorials/FibonacciAction.h>
+#include <ur5lego/MoveAction.h>
 
 int main (int argc, char **argv)
 {
-  ros::init(argc, argv, "test_fibonacci");
+  ros::init(argc, argv, "action_client");
 
   // create the action client
   // true causes the client to spin its own thread
-  actionlib::SimpleActionClient<actionlib_tutorials::FibonacciAction> ac("fibonacci", true);
+  actionlib::SimpleActionClient<ur5lego::MoveAction> ac("idk", true);
 
   ROS_INFO("Waiting for action server to start.");
   // wait for the action server to start
@@ -17,8 +17,13 @@ int main (int argc, char **argv)
 
   ROS_INFO("Action server started, sending goal.");
   // send a goal to the action
-  actionlib_tutorials::FibonacciGoal goal;
-  goal.order = 20;
+  ur5lego::MoveGoal goal;
+  goal.X = 20;
+  goal.Y = 30;
+  goal.Z = 40;
+  goal.r = 10;
+  goal.p = 13;
+  goal.y = 27;
   ac.sendGoal(goal);
 
   //wait for the action to return
@@ -26,8 +31,7 @@ int main (int argc, char **argv)
 
   if (finished_before_timeout)
   {
-    actionlib::SimpleClientGoalState state = ac.getState();
-    ROS_INFO("Action finished: %s",state.toString().c_str());
+    ROS_INFO("Action finished");
   }
   else
     ROS_INFO("Action did not finish before the time out.");
