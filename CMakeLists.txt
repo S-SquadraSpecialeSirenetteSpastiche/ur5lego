@@ -26,3 +26,7 @@ include_directories(${catkin_INCLUDE_DIRS})
 add_executable(ur5lego_move_server src/move_server.cpp)
 target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES})
 add_dependencies(ur5lego_move_server ${ur5lego_EXPORTED_TARGETS})
+
+add_executable(ur5lego_move_client src/move_client.cpp)
+target_link_libraries(ur5lego_move_client ${catkin_LIBRARIES})
+add_dependencies(ur5lego_move_client ${ur5lego_EXPORTED_TARGETS})
