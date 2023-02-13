@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "move_server");
 
-    MoveAction moveAction("idk");
+    MoveAction moveAction("move_server");
     ros::spin();
 
     return 0;

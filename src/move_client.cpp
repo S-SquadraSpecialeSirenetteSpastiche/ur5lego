@@ -9,7 +9,7 @@ int main (int argc, char **argv)
 
   // create the action client
   // true causes the client to spin its own thread
-  actionlib::SimpleActionClient<ur5lego::MoveAction> ac("idk", true);
+  actionlib::SimpleActionClient<ur5lego::MoveAction> ac("move_server", true);
 
   ROS_INFO("Waiting for action server to start.");
   // wait for the action server to start
