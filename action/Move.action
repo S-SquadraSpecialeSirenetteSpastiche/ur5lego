@@ -1,0 +1,18 @@
+#goal definition
+int32 X
+int32 Y
+int32 Z
+int32 r
+int32 p
+int32 y
+---
+#result definition
+bool success
+---
+#feedback
+int32 Xsofar
+int32 Ysofar
+int32 Zsofar
+int32 rsofar
+int32 psofar
+int32 ysofar

@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp rospy pinocchio actionlib_msgs ac
 
 add_action_files(
     DIRECTORY action
-    FILES Fibonacci.action
+    FILES Move.action Fibonacci.action
 )
 
 generate_messages(
@@ -25,7 +25,4 @@ include_directories(${catkin_INCLUDE_DIRS})
 
 add_executable(ur5lego_move_server src/move_server.cpp)
 target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES})
-add_dependencies(
-  ur5lego_move_server
-  ${ur5lego_EXPORTED_TARGETS}
-)
+add_dependencies(ur5lego_move_server ${ur5lego_EXPORTED_TARGETS})
