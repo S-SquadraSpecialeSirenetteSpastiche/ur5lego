@@ -10,10 +10,18 @@
 #include <string>
 #include <iostream>
 
-std::string coordsToStr(int a, int b, int c, int d, int e, int f){
+std::string coordsToStr(float a, float b, float c, float d, float e, float f){
     std::string s;
     s = "(" + std::to_string(a) + "," + std::to_string(b) + "," + std::to_string(c) + "), (" + 
         std::to_string(d) + "," + std::to_string(e) + "," + std::to_string(f) + ")";
+    return s;
+}
+
+std::string qToStr(Eigen::VectorXd q){
+    std::string s;
+    // i cicli for sono molto difficili
+    s = "[" + std::to_string(q(0)) + "," + std::to_string(q(1)) + "," + std::to_string(q(2)) + ", " + 
+        std::to_string(q(3)) + "," + std::to_string(q(4)) + "," + std::to_string(q(5)) + "]";
     return s;
 }
 
@@ -35,8 +43,8 @@ public:
     MoveAction(std::string name) : action_server_(nh_, name, boost::bind(&MoveAction::executeCB, this, _1), false), action_name_(name)
     {
         const std::string urdf_file = std::string("/opt/openrobots/share/example-robot-data/robots/ur_description/urdf/ur5_robot.urdf");
-        pinocchio::urdf::buildModel(urdf_file, model_);  // ur5
-        // pinocchio::buildModels::manipulator(model_);        // manipolatore generico
+        pinocchio::urdf::buildModel(urdf_file, model_);         // ur5
+        // pinocchio::buildModels::manipulator(model_);         // manipolatore generico
         action_server_.start();
     }
 
@@ -57,7 +65,7 @@ public:
 
         Eigen::VectorXd q = pinocchio::neutral(model_);  // initial configuration
         const double eps  = 1e-3;   // exit successfully if norm of the errors is less than this
-        const int IT_MAX  = 10000;  // max iterations before failure
+        const int IT_MAX  = 20000;  // max iterations before failure
         const double DT   = 1e-3;   // delta time
         const double damp = 1e-6;   // dampling factor (???)
 
@@ -105,7 +113,7 @@ public:
             q = pinocchio::integrate(model_,q,v*DT);
             if(!(i%100)){
                 // std::cout << i << ": error = " << err.transpose() << std::endl;
-                ROS_INFO_STREAM(std::to_string(i) + ": " + std::to_string(err.norm()));
+                ROS_INFO_STREAM(std::to_string(i) + ": " + std::to_string(err.norm()) + "   " + qToStr(q));
             }
         }
 

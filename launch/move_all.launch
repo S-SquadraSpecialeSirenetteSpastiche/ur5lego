@@ -1,0 +1,5 @@
+<launch>
+    <node name="rviz_node" pkg="rviz" type="rviz" />
+    <node name="move_server" pkg="ur5lego" type="ur5lego_move_server"/>
+    <node name="move_client" pkg="ur5lego" type="ur5lego_move_client"/>
+</launch>
