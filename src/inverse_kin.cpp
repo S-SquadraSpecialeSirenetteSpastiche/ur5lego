@@ -44,26 +44,23 @@ int main(int argc, char** argv)
         // dMi corresponds to the transformation between the desired pose and the current one
         err = pinocchio::log6(dMi).toVector();
 
-        /*  
-            If the error norm is below the previously-defined threshold,
-            we have found the solution and we break out of the loop
-            the norm of a spatial velocity does not make physical sense, since it mixes linear and angular quantities. 
-            A more rigorous implementation should treat the linar part and the angular part separately. 
-            In this example, however, we choose to slightly abuse the notation in order to keep it simple.
-        */
+          
+        // If the error norm is below the previously-defined threshold
+        // we have found the solution and we break out of the loop
+        // the norm of a spatial velocity does not make physical sense, since it mixes linear and angular quantities. 
+        // A more rigorous implementation should treat the linar part and the angular part separately. 
+        // In this example, however, we choose to slightly abuse the notation in order to keep it simple.
         if(err.norm() < eps)
         {
             success = true;
             break;
         }
 
-        /*
-            compute the evolution of the configuration by solving the inverse kinematics
-            in order to avoid problems at singularities, we employ the damped pseudo-inverse
-            implementing the equation as v. This way to compute the damped pseudo-inverse was chosen
-            mostly because of its simplicity of implementation. It is not necessarily the best nor the fastest way, 
-            and using a fixed damping factor is not necessarily the best course of action.
-        */
+        // compute the evolution of the configuration by solving the inverse kinematics
+        // in order to avoid problems at singularities, we employ the damped pseudo-inverse
+        // implementing the equation as v. This way to compute the damped pseudo-inverse was chosen
+        // because of its simplicity of implementation. It is not necessarily the best nor the fastest way, 
+        // and using a fixed damping factor is not necessarily the best course of action.
         pinocchio::computeJointJacobian(model,data,q,JOINT_ID,J);
         pinocchio::Data::Matrix6 JJt;
         JJt.noalias() = J * J.transpose();
