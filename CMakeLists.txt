@@ -22,11 +22,9 @@ catkin_package(
 
 include_directories(${catkin_INCLUDE_DIRS})
 
-add_executable(ur5lego_inv_kin src/inverse_kin.cpp)
-target_link_libraries(ur5lego_inv_kin ${catkin_LIBRARIES} pinocchio::pinocchio)
 
 add_executable(ur5lego_move_server src/move_server.cpp)
-target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES})
+target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES} pinocchio::pinocchio)
 # add_dependencies(ur5lego_move_server ${ur5lego_EXPORTED_TARGETS})
 
 add_executable(ur5lego_move_client src/move_client.cpp)
