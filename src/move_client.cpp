@@ -18,12 +18,12 @@ int main (int argc, char **argv)
   ROS_INFO("Action server started, sending goal.");
   // send a goal to the action
   ur5lego::MoveGoal goal;
-  goal.X = 1;
-  goal.Y = 0;
-  goal.Z = 1;
-  goal.r = 0;
-  goal.p = 0;
-  goal.y = 0;
+  goal.X = (_Float32)0.1;
+  goal.Y = (_Float32)0.1;
+  goal.Z = (_Float32)0.2;
+  goal.r = (_Float32)0;
+  goal.p = (_Float32)0;
+  goal.y = (_Float32)0;
   ac.sendGoal(goal);
 
   //wait for the action to return
