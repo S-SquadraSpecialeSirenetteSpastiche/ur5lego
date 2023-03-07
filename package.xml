@@ -54,6 +54,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>roscpp</depend>
   <depend>pinocchio</depend>
+  <depend>example-robot-data</depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

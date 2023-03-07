@@ -1,0 +1,63 @@
+<?xml version="1.0" ?>
+<launch>
+    <arg name="spawn_x" default="0.5" />
+	<arg name="spawn_y" default="0.35" />
+	<arg name="spawn_z" default="1.8" />
+
+    <!-- no idea what this does but it looks important TODO: pass it to something-->
+    <arg name="transmission_hw_interface" default="hardware_interface/PositionJointInterface" />
+
+    <!-- send the robot XML to param server -->
+    <!-- TODO: gripper:=true-->
+    <param name="robot_description" command="$(find xacro)/xacro '$(find ur5lego)/robot_description/ur5.urdf.xacro'
+        joint_limit_params:=config/joint_limits.yaml
+        kinematics_params:=config/default_kinematics.yaml
+        physical_params:=config/physical_parameters.yaml
+        visual_params:=config/visual_parameters.yaml
+        transmission_hw_interface:=hardware_interface/EffortJointInterface
+        safety_limits:=false
+        safety_pos_margin:=0.15
+        safety_k_position:=20
+        gazebo:=true
+        gripper:=false"	
+    />
+
+    <!--
+    <param name="robot_description" 
+        textfile="$(find ur5lego)/robot_description/ur5.urdf.xacro"/>
+    -->
+    
+    <!--
+    <param name="robot_description" 
+        textfile="$(find example-robot-data)/robots/ur_description/urdf/ur5_robot.urdf"/>
+    -->
+
+    <!-- launch gzserver -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch" >
+        <!-- perchè apro un mondo vuoto per poi caricare il mondo del tavolo? E perchè il mondo del tavolo non si carica? -->
+		<arg name="world_name" value="$(find ur5lego)/worlds/tavolo.world"/>
+        <arg name="paused" default="true" />
+		<arg name="physics" default="ode" />
+        <arg name="use_sim_time" default="true" />
+        <arg name="gui" value="true" />
+        <arg name="headless" default="false" />
+        <arg name="debug" default="false" />
+        <arg name="verbose" value="true" />
+    </include>
+
+    <!-- spawn the robot described in robot_description into Gazebo -->
+    <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" 
+        args="-urdf -param robot_description -model ur5 -x $(arg spawn_x) -y $(arg spawn_y) -z $(arg spawn_z)"/>
+
+    <!-- add the gripper -->
+    <!--
+        <rosparam file="$(find ur_description)/config/ur5e/ur5e_controllers_gripper.yaml" ns="/$(arg robot_name)" command="load"/>
+       	<rosparam file="$(find ur_description)/config/ros_impedance_controller_gripper.yaml" ns="/$(arg robot_name)" command="load"/>
+    -->
+
+    <!-- add the controller -->
+    <!--
+	    <node name="ros_impedance_controller" pkg="controller_manager" type="spawner" respawn="false"
+		output="screen" ns="/$(arg robot_name)"  args="joint_state_publisher $(arg position_controllers)" />
+    -->
+</launch>
