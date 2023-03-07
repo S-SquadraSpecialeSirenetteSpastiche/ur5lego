@@ -7,17 +7,18 @@
 <xacro:arg name="gazebo" default="true"/>
 <xacro:arg name="gripper" default="false"/>
 <xacro:arg name="prefix" default=""/>
+
+<!-- legal values:
+ - hardware_interface/PositionJointInterface
+ - hardware_interface/VelocityJointInterface
+ - hardware_interface/EffortJointInterface
+-->
 <xacro:arg name="transmission_hw_interface" default="hardware_interface/EffortJointInterface"/>
 
 <xacro:arg name="joint_limit_params" default="config/joint_limits.yaml"/>
 <xacro:arg name="kinematics_params" default="config/default_kinematics.yaml"/>
 <xacro:arg name="physical_params" default="config/physical_parameters.yaml"/>
 <xacro:arg name="visual_params" default="config/visual_parameters.yaml"/>
-<!-- legal values:
- - hardware_interface/PositionJointInterface
- - hardware_interface/VelocityJointInterface
- - hardware_interface/EffortJointInterface
--->
 <xacro:arg name="safety_limits" default="false"/>
 <xacro:arg name="safety_pos_margin" default="0.15"/>
 <xacro:arg name="safety_k_position" default="20"/>
@@ -67,11 +68,11 @@ safety_k_position="$(arg safety_k_position)"/>
 		<origin xyz="0.05 0.0 -0.02" rpy="0 -1.57 0.0"/>
 	</xacro:d435_camera>
 
-	  <xacro:property name="camera_fov" value="3.0"/>
-	  <xacro:property name="camera_width" value="640"/> 
-	  <xacro:property name="camera_height" value="480"/>
-	  <xacro:property name="camera_near" value="0.01"/>
-	  <xacro:property name="camera_far" value="100"/> 
+	<xacro:property name="camera_fov" value="3.0"/>
+	<xacro:property name="camera_width" value="640"/> 
+	<xacro:property name="camera_height" value="480"/>
+	<xacro:property name="camera_near" value="0.01"/>
+	<xacro:property name="camera_far" value="100"/> 
 
 	<xacro:d435_camera 
 		parent="base_link" 
@@ -84,14 +85,6 @@ safety_k_position="$(arg safety_k_position)"/>
 </xacro:if>
 
 <xacro:if value="$(arg gazebo)">
-  <!--
-    Attach the Gazebo model to Gazebo's world frame.
-
-    Note: if you're looking to integrate a UR into a larger scene and need
-    to add EEFs or other parts, DO NOT change this file or the 'world' link
-    here. Create a NEW xacro instead and decide whether you need to add
-    a 'world' link there.
-  -->
   <link name="world"/>
   <joint name="world_joint" type="fixed">
     <parent link="world"/>
@@ -158,8 +151,7 @@ safety_k_position="$(arg safety_k_position)"/>
     -->
     <gazebo>
       <plugin name="gazebo_ros_controller_manager" filename="libgazebo_ros_control.so">
-			
-			<robotNamespace>/ur5</robotNamespace> <!--TODO1 change this with prefix when you use 2 robots     -->
+			<robotNamespace>/ur5</robotNamespace>
 			<robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
 			<legacyModeNS>true</legacyModeNS>
       </plugin>
