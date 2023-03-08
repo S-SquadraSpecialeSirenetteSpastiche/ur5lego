@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
 <launch>
+    <arg name="robot_name" default="ur5" />
     <arg name="spawn_x" default="0.5" />
 	<arg name="spawn_y" default="0.35" />
 	<arg name="spawn_z" default="1.8" />
@@ -26,7 +27,7 @@
     <include file="$(find gazebo_ros)/launch/empty_world.launch" >
         <!-- perchè apro un mondo vuoto per poi caricare il mondo del tavolo? E perchè il mondo del tavolo non si carica? -->
 		<arg name="world_name" value="$(find ur5lego)/worlds/tavolo.world"/>
-        <arg name="paused" default="true" />
+        <arg name="paused" default="false" />
 		<arg name="physics" default="ode" />
         <arg name="use_sim_time" default="true" />
         <arg name="gui" value="true" />
@@ -35,19 +36,34 @@
         <arg name="verbose" value="true" />
     </include>
 
+
+    <!-- TUTTO QUESTO VA FATTO FUNZIONARE!!!!! -->
+    <rosparam file="$(find ur5lego)/robot_description/config/joint_state_publisher.yaml" ns="/$(arg robot_name)" command="load"/>
+
+    <rosparam file="$(find ur5lego)/robot_description/config/controllers_gripper_config.yaml" ns="/$(arg robot_name)" command="load"/>
+    <rosparam file="$(find ur5lego)/robot_description/config/ros_impedance_controller_gripper.yaml" ns="/$(arg robot_name)" command="load"/>
+
+
+    <!-- load the controllers -->
+    <!-- /ur5/joint_group_pos_controller -->
+    <node name="joint_state_publisher_spawner" pkg="controller_manager" type="spawner" respawn="false"
+        output="screen" ns="/$(arg robot_name)" args="joint_state_publisher"/>
+
     <!-- spawn the robot described in robot_description into Gazebo -->
-    <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" 
-        args="-urdf -param robot_description -model ur5 -x $(arg spawn_x) -y $(arg spawn_y) -z $(arg spawn_z)"/>
+    <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model"
+        args="-urdf -param robot_description -model ur5 -robot_namespace /$(arg robot_name) -x $(arg spawn_x) -y $(arg spawn_y) -z $(arg spawn_z)"/>
+
+    <!-- convert joint states to TF transforms for rviz, etc (unico nodo non essenziale) -->
+    <!--
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"
+            respawn="false" output="screen">
+            <remap from="/joint_states" to="/rrbot/joint_states" />
+        </node>
+    -->
 
     <!-- add the gripper -->
     <!--
         <rosparam file="$(find ur_description)/config/ur5e/ur5e_controllers_gripper.yaml" ns="/$(arg robot_name)" command="load"/>
        	<rosparam file="$(find ur_description)/config/ros_impedance_controller_gripper.yaml" ns="/$(arg robot_name)" command="load"/>
-    -->
-
-    <!-- add the controller -->
-    <!--
-	    <node name="ros_impedance_controller" pkg="controller_manager" type="spawner" respawn="false"
-		output="screen" ns="/$(arg robot_name)"  args="joint_state_publisher $(arg position_controllers)" />
     -->
 </launch>
