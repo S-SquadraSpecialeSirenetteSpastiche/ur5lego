@@ -13,7 +13,7 @@
  - hardware_interface/VelocityJointInterface
  - hardware_interface/EffortJointInterface
 -->
-<xacro:arg name="transmission_hw_interface" default="hardware_interface/EffortJointInterface"/>
+<xacro:arg name="transmission_hw_interface" default="hardware_interface/PositionJointInterface"/>
 
 <xacro:arg name="joint_limit_params" default="config/joint_limits.yaml"/>
 <xacro:arg name="kinematics_params" default="config/default_kinematics.yaml"/>
@@ -156,9 +156,6 @@ safety_k_position="$(arg safety_k_position)"/>
 			<legacyModeNS>true</legacyModeNS>
       </plugin>
     </gazebo>
-
-
-
 
   </xacro:if>
 </robot>
