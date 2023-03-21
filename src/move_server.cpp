@@ -4,7 +4,9 @@
 #include "pinocchio/algorithm/kinematics.hpp"
 #include "pinocchio/algorithm/jacobian.hpp"
 #include "pinocchio/algorithm/joint-configuration.hpp"
+#include "std_msgs/Float64MultiArray.h"
 #include <ros/ros.h>
+#include <ros/package.h>
 #include <actionlib/server/simple_action_server.h>
 #include <ur5lego/MoveAction.h>
 #include <string>
@@ -28,8 +30,10 @@ std::string qToStr(Eigen::VectorXd q){
 class MoveAction
 {
 protected:
-    ros::NodeHandle nh_;
-    // NodeHandle instance must be created before this line. Otherwise strange error occurs.
+    ros::NodeHandle server_node;
+    ros::NodeHandle talker_node;
+    ros::Publisher publisher;
+    // NodeHandle instance must be created before this line
     actionlib::SimpleActionServer<ur5lego::MoveAction> action_server_;
     std::string action_name_;
     // create messages that are used to published feedback/result
@@ -40,11 +44,15 @@ protected:
     const int JOINT_ID = 6;
 
 public:
-    MoveAction(std::string name) : action_server_(nh_, name, boost::bind(&MoveAction::executeCB, this, _1), false), action_name_(name)
+    MoveAction(std::string name) : action_server_(server_node, name, boost::bind(&MoveAction::executeCB, this, _1), false), action_name_(name)
     {
+        publisher = talker_node.advertise<std_msgs::Float64MultiArray>("/joint_group_pos_controller/command", 10);
+
+        // TODO: recuperare l'urdf di ur5lego al posto di quello di example-robot-data
+        // std::string path = ros::package::getPath("ur5lego");
+        // ROS_INFO_STREAM(path);
         const std::string urdf_file = std::string("/opt/openrobots/share/example-robot-data/robots/ur_description/urdf/ur5_robot.urdf");
-        pinocchio::urdf::buildModel(urdf_file, model_);         // ur5
-        // pinocchio::buildModels::manipulator(model_);         // manipolatore generico
+        pinocchio::urdf::buildModel(urdf_file, model_);
         action_server_.start();
     }
 
@@ -68,6 +76,7 @@ public:
         const int IT_MAX  = 20000;  // max iterations before failure
         const double DT   = 1e-3;   // delta time
         const double damp = 1e-6;   // dampling factor (???)
+        ros::Rate rate(DT);
 
         pinocchio::Data::Matrix6x J(6,model_.nv);
         J.setZero();
@@ -115,6 +124,16 @@ public:
                 // std::cout << i << ": error = " << err.transpose() << std::endl;
                 ROS_INFO_STREAM(std::to_string(i) + ": " + std::to_string(err.norm()) + "   " + qToStr(q));
             }
+            
+            // publish the message
+            /*
+            std_msgs::Float64MultiArray command;
+            for(int i=0; i<6; i++)
+                command.data.push_back(q[i]);
+            publisher.publish(command);
+            */
+            
+            // rate.sleep();
         }
 
         if(success) 
@@ -131,8 +150,9 @@ public:
 
 int main(int argc, char **argv)
 {
+    // std_msgs/Float64MultiArray
     ros::init(argc, argv, "move_server");
-
+    
     MoveAction moveAction("move_server");
     ros::spin();
 
