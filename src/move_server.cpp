@@ -46,12 +46,13 @@ protected:
 public:
     MoveAction(std::string name) : action_server_(server_node, name, boost::bind(&MoveAction::executeCB, this, _1), false), action_name_(name)
     {
-        publisher = talker_node.advertise<std_msgs::Float64MultiArray>("/joint_group_pos_controller/command", 10);
+        publisher = talker_node.advertise<std_msgs::Float64MultiArray>("/ur5/joint_group_pos_controller/command", 10);
 
         // TODO: recuperare l'urdf di ur5lego al posto di quello di example-robot-data
-        // std::string path = ros::package::getPath("ur5lego");
+        // std::string package_path = ros::package::getPath("ur5lego");
         // ROS_INFO_STREAM(path);
-        const std::string urdf_file = std::string("/opt/openrobots/share/example-robot-data/robots/ur_description/urdf/ur5_robot.urdf");
+        const std::string urdf_file = std::string("/home/utente/my_ws/src/ur5lego/robot_description/ur5.urdf");
+        // const std::string urdf_file = std::string("/opt/openrobots/share/example-robot-data/robots/ur_description/urdf/ur5_robot.urdf");
         pinocchio::urdf::buildModel(urdf_file, model_);
         action_server_.start();
     }
@@ -76,7 +77,7 @@ public:
         const int IT_MAX  = 20000;  // max iterations before failure
         const double DT   = 1e-3;   // delta time
         const double damp = 1e-6;   // dampling factor (???)
-        ros::Rate rate(DT);
+        ros::Rate rate(1/DT);
 
         pinocchio::Data::Matrix6x J(6,model_.nv);
         J.setZero();
@@ -126,14 +127,13 @@ public:
             }
             
             // publish the message
-            /*
             std_msgs::Float64MultiArray command;
+            command.data.resize(6);
             for(int i=0; i<6; i++)
-                command.data.push_back(q[i]);
+                command.data[i] = (float)q[i];
             publisher.publish(command);
-            */
             
-            // rate.sleep();
+            rate.sleep();
         }
 
         if(success) 

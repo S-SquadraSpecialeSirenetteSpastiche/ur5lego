@@ -19,8 +19,8 @@ int main (int argc, char **argv)
   // send a goal to the action
   ur5lego::MoveGoal goal;
   goal.X = (_Float32)0.1;
-  goal.Y = (_Float32)0.1;
-  goal.Z = (_Float32)0.2;
+  goal.Y = (_Float32)0.0;
+  goal.Z = (_Float32)-0.2;
   goal.r = (_Float32)0;
   goal.p = (_Float32)0;
   goal.y = (_Float32)0;
