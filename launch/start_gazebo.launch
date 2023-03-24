@@ -1,15 +1,9 @@
 <?xml version="1.0" ?>
 <launch>
     <arg name="robot_name" default="ur5" />
-    <arg name="spawn_x" default="0.5" />
-	<arg name="spawn_y" default="0.35" />
-	<arg name="spawn_z" default="1.8" />
-
-    <!-- no idea what this does since the transmission_hw_interface is specified directly later-->
-    <arg name="transmission_hw_interface" default="hardware_interface/PositionJointInterface" />
-
+    
     <!-- send the robot XML to param server -->
-    <!-- TODO: gripper:=true-->
+    <!-- TODO: gripper:=true (a dire il vero si muove anche cosi' ma dettagli)-->
     <param name="robot_description" command="$(find xacro)/xacro '$(find ur5lego)/robot_description/ur5.urdf.xacro'
         joint_limit_params:=config/joint_limits.yaml
         kinematics_params:=config/default_kinematics.yaml
@@ -29,15 +23,16 @@
         <arg name="paused" default="false" />
     </include>
 
-
+    <!-- load the controllers configuration files -->
     <rosparam file="$(find ur5lego)/robot_description/config/joint_state_publisher.yaml" ns="/$(arg robot_name)" command="load"/>
     <rosparam file="$(find ur5lego)/robot_description/config/controllers_config.yaml" ns="/$(arg robot_name)" command="load"/>
 
-    <!-- load the controllers -->
+    <!-- load the controllers on the same namespace as the robot -->
     <node name="joint_state_publisher_spawner" pkg="controller_manager" type="spawner" respawn="false"
         output="screen" ns="/$(arg robot_name)" args="joint_state_publisher joint_group_pos_controller"/>
     
     <!-- spawn the robot described in robot_description into Gazebo -->
-    <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model"
-        args="-urdf -param robot_description -model ur5 -robot_namespace /$(arg robot_name) -x $(arg spawn_x) -y $(arg spawn_y) -z $(arg spawn_z)"/>
+    <include file="$(find ur5lego)/launch/spawn_robot.launch">
+        <arg name="robot_name" value="$(arg robot_name)" />
+    </include>
 </launch>
