@@ -73,18 +73,17 @@ public:
         const pinocchio::SE3 oMdes(Eigen::Matrix3d::Identity(), Eigen::Vector3d(X, Y, Z));   // destination
 
         Eigen::VectorXd q = pinocchio::neutral(model_);  // initial configuration
-        const double eps  = 1e-3;   // exit successfully if norm of the errors is less than this
-        const int IT_MAX  = 20000;  // max iterations before failure
-        const double DT   = 1e-3;   // delta time
-        const double damp = 1e-6;   // dampling factor (???)
+        const double eps  = 1e-2;   // exit successfully if all components of the error are less than this
+        const int IT_MAX  = 5000;  // max iterations before failure
+        const double DT   = 1e-2;   // delta time
+        const double damp = 1e-4;   // dampling factor (???)
         ros::Rate rate(1/DT);
 
-        pinocchio::Data::Matrix6x J(6,model_.nv);
+        pinocchio::Data::Matrix6x J(6, model_.nv);
         J.setZero();
 
         bool success = false;
-        typedef Eigen::Matrix<double, 6, 1> Vector6d;
-        Vector6d err;
+        Eigen::Matrix<double, 6, 1> err;
         Eigen::VectorXd v(model_.nv);
 
         
@@ -95,15 +94,7 @@ public:
 
             // dMi corresponds to the transformation between the desired pose and the current one
             err = pinocchio::log6(dMi).toVector();
-
-            
-            // If the error norm is below the previously-defined threshold
-            // we have found the solution and we break out of the loop
-            // the norm of a spatial velocity does not make physical sense, since it mixes linear and angular quantities. 
-            // A more rigorous implementation should treat the linar part and the angular part separately. 
-            // In this example, however, we choose to slightly abuse the notation in order to keep it simple.
-            if(err.norm() < eps)
-            {
+            if(abs(err[0]) < eps && abs(err[1]) < eps && abs(err[2]) < eps){
                 success = true;
                 break;
             }
@@ -113,18 +104,14 @@ public:
             // implementing the equation as v. This way to compute the damped pseudo-inverse was chosen
             // because of its simplicity of implementation. It is not necessarily the best nor the fastest way, 
             // and using a fixed damping factor is not necessarily the best course of action.
-            pinocchio::computeJointJacobian(model_,data,q,JOINT_ID,J);
+            pinocchio::computeJointJacobian(model_, data, q, JOINT_ID, J);
             pinocchio::Data::Matrix6 JJt;
             JJt.noalias() = J * J.transpose();
             JJt.diagonal().array() += damp;
             v.noalias() = - J.transpose() * JJt.ldlt().solve(err);
             // add the obtained tangent vector to the current configuration q
             // integrate amounts to a simple sum. The resulting error will be verified in the next iteration.
-            q = pinocchio::integrate(model_,q,v*DT);
-            if(!(i%100)){
-                // std::cout << i << ": error = " << err.transpose() << std::endl;
-                ROS_INFO_STREAM(std::to_string(i) + ": " + std::to_string(err.norm()) + "   " + qToStr(q));
-            }
+            q = pinocchio::integrate(model_, q, v*DT);
             
             // publish the message
             std_msgs::Float64MultiArray command;
@@ -140,9 +127,6 @@ public:
             ROS_INFO_STREAM("Convergence achieved!");
         else 
             ROS_INFO_STREAM("Warning: the iterative algorithm has not reached convergence to the desired precision");
-
-        // std::cout << "\nresult: " << q.transpose() << std::endl;
-        // std::cout << "\nfinal error: " << err.transpose() << std::endl;
 
         return success;
     }
