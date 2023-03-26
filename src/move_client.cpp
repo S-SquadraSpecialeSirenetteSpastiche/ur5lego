@@ -3,6 +3,7 @@
 #include <actionlib/client/terminal_state.h>
 #include <ur5lego/MoveAction.h>
 #include <fstream>
+#include <unistd.h>
 
 int main (int argc, char **argv)
 {
@@ -43,7 +44,6 @@ int main (int argc, char **argv)
         goals[i].p = (_Float32)p;
         goals[i].y = (_Float32)y;
     }
-    
     file.close();
 
     int i=0;
@@ -64,6 +64,7 @@ int main (int argc, char **argv)
 
         i++;
         if(i>=n) i=0;
+        sleep(1);
     }
 
     delete[] goals;
