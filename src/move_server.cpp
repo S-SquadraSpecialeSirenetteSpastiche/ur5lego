@@ -41,6 +41,7 @@ protected:
     ur5lego::MoveResult result_;
     pinocchio::Model model_;
     pinocchio::Data data_;
+    Eigen::VectorXd q;  // current configuration, assumed neutral at start
     const int JOINT_ID = 6;
 
 public:
@@ -54,6 +55,7 @@ public:
         const std::string urdf_file = std::string("/home/utente/my_ws/src/ur5lego/robot_description/ur5.urdf");
         // const std::string urdf_file = std::string("/opt/openrobots/share/example-robot-data/robots/ur_description/urdf/ur5_robot.urdf");
         pinocchio::urdf::buildModel(urdf_file, model_);
+        q = pinocchio::neutral(model_);
         action_server_.start();
     }
 
@@ -72,7 +74,6 @@ public:
         pinocchio::Data data(model_);
         const pinocchio::SE3 oMdes(Eigen::Matrix3d::Identity(), Eigen::Vector3d(X, Y, Z));   // destination
 
-        Eigen::VectorXd q = pinocchio::neutral(model_);  // initial configuration
         const double eps  = 1e-2;   // exit successfully if all spatial components of the error are less than this
         const int IT_MAX  = 5000;   // max iterations before failure
         const double DT   = 1e-2;   // delta time
