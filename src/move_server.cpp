@@ -19,13 +19,6 @@ std::string coordsToStr(float a, float b, float c, float d, float e, float f){
     return s;
 }
 
-std::string qToStr(Eigen::VectorXd q){
-    std::string s;
-    // i cicli for sono molto difficili
-    s = "[" + std::to_string(q(0)) + "," + std::to_string(q(1)) + "," + std::to_string(q(2)) + ", " + 
-        std::to_string(q(3)) + "," + std::to_string(q(4)) + "," + std::to_string(q(5)) + "]";
-    return s;
-}
 
 class MoveAction
 {
@@ -49,11 +42,10 @@ public:
     {
         publisher = talker_node.advertise<std_msgs::Float64MultiArray>("/ur5/joint_group_pos_controller/command", 10);
 
-        // TODO: usare un percorso relativo
-        // std::string package_path = ros::package::getPath("ur5lego");
+        std::string package_path = ros::package::getPath("ur5lego");
         // ROS_INFO_STREAM(path);
-        const std::string urdf_file = std::string("/home/utente/my_ws/src/ur5lego/robot_description/ur5.urdf");
-        // const std::string urdf_file = std::string("/opt/openrobots/share/example-robot-data/robots/ur_description/urdf/ur5_robot.urdf");
+        const std::string urdf_file = package_path + std::string("/robot_description/ur5.urdf");
+
         pinocchio::urdf::buildModel(urdf_file, model_);
         q = pinocchio::neutral(model_);
         action_server_.start();
