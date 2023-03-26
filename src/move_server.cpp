@@ -48,7 +48,7 @@ public:
     {
         publisher = talker_node.advertise<std_msgs::Float64MultiArray>("/ur5/joint_group_pos_controller/command", 10);
 
-        // TODO: recuperare l'urdf di ur5lego al posto di quello di example-robot-data
+        // TODO: usare un percorso relativo
         // std::string package_path = ros::package::getPath("ur5lego");
         // ROS_INFO_STREAM(path);
         const std::string urdf_file = std::string("/home/utente/my_ws/src/ur5lego/robot_description/ur5.urdf");
@@ -73,8 +73,8 @@ public:
         const pinocchio::SE3 oMdes(Eigen::Matrix3d::Identity(), Eigen::Vector3d(X, Y, Z));   // destination
 
         Eigen::VectorXd q = pinocchio::neutral(model_);  // initial configuration
-        const double eps  = 1e-2;   // exit successfully if all components of the error are less than this
-        const int IT_MAX  = 5000;  // max iterations before failure
+        const double eps  = 1e-2;   // exit successfully if all spatial components of the error are less than this
+        const int IT_MAX  = 5000;   // max iterations before failure
         const double DT   = 1e-2;   // delta time
         const double damp = 1e-4;   // dampling factor (???)
         ros::Rate rate(1/DT);
@@ -86,9 +86,8 @@ public:
         Eigen::Matrix<double, 6, 1> err;
         Eigen::VectorXd v(model_.nv);
 
-        
         for (int i=0; i<IT_MAX; i++) {
-            pinocchio::forwardKinematics(model_,data,q);
+            pinocchio::forwardKinematics(model_, data, q);
             // data.oMi[JOINT_ID] corresponds to the placement of the sixth joint (previously computed by forwardKinematics)
             const pinocchio::SE3 dMi = oMdes.actInv(data.oMi[JOINT_ID]);
 
@@ -134,10 +133,9 @@ public:
 
 int main(int argc, char **argv)
 {
-    // std_msgs/Float64MultiArray
     ros::init(argc, argv, "move_server");
-    
     MoveAction moveAction("move_server");
+    ROS_INFO_STREAM("Server ready");
     ros::spin();
 
     return 0;

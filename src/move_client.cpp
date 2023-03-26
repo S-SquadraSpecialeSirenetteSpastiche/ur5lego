@@ -18,44 +18,55 @@ int main (int argc, char **argv)
 
     ROS_INFO("Action server started, sending goal.");
     // send a goal to the action
-    ur5lego::MoveGoal goal;
 
     std::ifstream file("/home/utente/my_ws/src/ur5lego/src/dest.txt");
+    int n;
+    file >> n;
 
-    // while(!eof(file)) o qualcosa del genere
+    ur5lego::MoveGoal *goals = new ur5lego::MoveGoal[n];
 
-    // su Gazebo asse rosso x, verde y, blu z
-    float X, Y, Z, r, p, y;
-    file >> X >> Y >> X >> r >> p >> y;
-    ROS_INFO("Action server started, sending goal.");
-    goal.X = (_Float32)X;
-    goal.Y = (_Float32)Y;
-    goal.Z = (_Float32)Z;
-    goal.r = (_Float32)r;
-    goal.p = (_Float32)p;
-    goal.y = (_Float32)y;
-    ROS_INFO_STREAM(X);
-    ROS_INFO_STREAM(goal.X);
+
+    for(int i=0; i<n; i++){
+        // su Gazebo asse rosso x, verde y, blu z
+        float X, Y, Z, r, p, y;
+        // se li metto uno dopo l'altro non funziona
+        file >> X;
+        file >> Y;
+        file >> Z;
+        file >> r;
+        file >> p;
+        file >> y;
+        goals[i].X = (_Float32)X;
+        goals[i].Y = (_Float32)Y;
+        goals[i].Z = (_Float32)Z;
+        goals[i].r = (_Float32)r;
+        goals[i].p = (_Float32)p;
+        goals[i].y = (_Float32)y;
+    }
+    
     file.close();
 
-    /*
-    goal.X = (_Float32)0.1;
-    goal.Y = (_Float32)0.0;
-    goal.Z = (_Float32)-0.2;
-    goal.r = (_Float32)0;
-    goal.p = (_Float32)0;
-    goal.y = (_Float32)0;
-    */
+    int i=0;
+    while(ros::ok()){
+        ROS_INFO("Sending goal %d", i);
 
-    ac.sendGoal(goal);
+        ac.sendGoal(goals[i]);
 
-    //wait for the action to return
-    bool finished_before_timeout = ac.waitForResult(ros::Duration(20.0));
-    if (finished_before_timeout)
-        ROS_INFO("Action finished");
-    else
-        ROS_INFO("Action did not finish before the time out.");
+        //wait for the action to return
+        bool finished_before_timeout = ac.waitForResult(ros::Duration(20.0));
+        if (finished_before_timeout){
+            ROS_INFO("Action finished");
+        }
+        else{
+            ROS_INFO("Action did not finish before the time out.");
+            break;
+        }
 
+        i++;
+        if(i>=n) i=0;
+    }
+
+    delete[] goals;
 
     return 0;
 }
