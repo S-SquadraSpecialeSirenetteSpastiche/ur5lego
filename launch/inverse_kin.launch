@@ -1,3 +1,0 @@
-<launch>
-    <node name="inverse_kinematics" pkg="ur5lego" type="ur5lego_inverse_kinematics"/>
-</launch>

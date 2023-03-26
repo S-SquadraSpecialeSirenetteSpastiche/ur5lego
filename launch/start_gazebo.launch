@@ -1,0 +1,38 @@
+<?xml version="1.0" ?>
+<launch>
+    <arg name="robot_name" default="ur5" />
+    
+    <!-- send the robot XML to param server -->
+    <!-- TODO: gripper:=true (a dire il vero si muove anche cosi' ma dettagli)-->
+    <param name="robot_description" command="$(find xacro)/xacro '$(find ur5lego)/robot_description/ur5.urdf.xacro'
+        joint_limit_params:=config/joint_limits.yaml
+        kinematics_params:=config/default_kinematics.yaml
+        physical_params:=config/physical_parameters.yaml
+        visual_params:=config/visual_parameters.yaml
+        transmission_hw_interface:=hardware_interface/PositionJointInterface
+        safety_limits:=false
+        safety_pos_margin:=0.15
+        safety_k_position:=20
+        gazebo:=true
+        gripper:=false"	
+    />
+
+    <!-- launch gzserver -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch" >
+		<arg name="world_name" value="$(find ur5lego)/worlds/tavolo.world"/>
+        <arg name="paused" default="false" />
+    </include>
+
+    <!-- load the controllers configuration files -->
+    <rosparam file="$(find ur5lego)/robot_description/config/joint_state_publisher.yaml" ns="/$(arg robot_name)" command="load"/>
+    <rosparam file="$(find ur5lego)/robot_description/config/controllers_config.yaml" ns="/$(arg robot_name)" command="load"/>
+
+    <!-- load the controllers on the same namespace as the robot -->
+    <node name="joint_state_publisher_spawner" pkg="controller_manager" type="spawner" respawn="false"
+        output="screen" ns="/$(arg robot_name)" args="joint_state_publisher joint_group_pos_controller"/>
+    
+    <!-- spawn the robot described in robot_description into Gazebo -->
+    <include file="$(find ur5lego)/launch/spawn_robot.launch">
+        <arg name="robot_name" value="$(arg robot_name)" />
+    </include>
+</launch>
