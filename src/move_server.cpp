@@ -21,6 +21,45 @@ std::string coordsToStr(float a, float b, float c, float d, float e, float f){
 }
 
 
+Eigen::Matrix3d euler_to_rotation_matrix(Eigen::Vector3d rpy){
+    Eigen::Matrix3d Rx, Ry, Rz;
+    double r=rpy[0], p=rpy[1], y=rpy[2];
+
+    Rx <<   1, 0,      0,
+            0, cos(r), -1*sin(r),
+            0, sin(r),  cos(r);
+            
+    Ry <<   cos(p),    0, sin(p),
+            0,         1, 0,
+            -1*sin(p), 0, cos(p);
+
+    Rz <<   cos(y), -1*sin(y), 0,
+            sin(y), cos(y),    0,
+            0,      0,         1;
+
+    return Rz*(Ry*Rx);
+}
+
+Eigen::Matrix3d euler_to_rotation_matrix_2(Eigen::Vector3d rpy){
+    Eigen::Matrix3d Rx, Ry, Rz;
+    double r=rpy[0], p=rpy[1], y=rpy[2];
+
+    Rx <<   1, 0,         0,
+            0, cos(r),    sin(r),
+            0, -1*sin(r), cos(r);
+
+    Ry <<   cos(p), 0, -1*sin(p),
+            0,      1, 0,
+            sin(p), 0, cos(p);
+
+    Rz <<   cos(y),    sin(y), 0,
+            -1*sin(y), cos(y), 0,
+            0,         0,      1;
+
+    return Rx*(Ry*Rz);
+}
+
+
 // implements the inverse kinematics function
 // parameters:
 // model: the model of the robot
@@ -125,15 +164,15 @@ public:
     void executeCB(const ur5lego::MoveGoalConstPtr &goal){
         ROS_INFO_STREAM("target: " << coordsToStr(
             goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y));
-        result_.success = move(goal->X, goal->Y, goal->Z);
+        result_.success = move(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y);
         action_server_.setSucceeded(result_);
     }
 
     // tries to compute the inverse kinematics
     // to bring the joint number JOINT_ID to the desired position
     // if successful, sends the desired position to the robot
-    bool move(double X, double Y, double Z){
-        const pinocchio::SE3 oMdes(Eigen::Matrix3d::Identity(), Eigen::Vector3d(X, Y, Z));
+    bool move(double X, double Y, double Z, double r, double p, double y){
+        const pinocchio::SE3 oMdes(euler_to_rotation_matrix(Eigen::Vector3d(r, p, y)), Eigen::Vector3d(X, Y, Z));
         std::pair<Eigen::VectorXd, bool> res = inverse_kinematics(model_, q, oMdes);
 
         if(res.second){
