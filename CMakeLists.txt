@@ -23,8 +23,10 @@ catkin_package(
 include_directories(${catkin_INCLUDE_DIRS})
 
 
+add_library(inverse_kinematics src/inverse_kinematics.cpp)
+
 add_executable(ur5lego_move_server src/move_server.cpp)
-target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES} pinocchio::pinocchio)
+target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES} pinocchio::pinocchio inverse_kinematics)
 # add_dependencies(ur5lego_move_server ${ur5lego_EXPORTED_TARGETS})
 
 add_executable(ur5lego_move_client src/move_client.cpp)

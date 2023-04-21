@@ -1,0 +1,5 @@
+<launch>
+    <node name="rqt_console" pkg="rqt_console" type="rqt_console"/>
+    <include file="$(find ur5lego)/launch/move_server.launch"></include>
+    <include file="$(find ur5lego)/launch/move_client.launch"></include>
+</launch>

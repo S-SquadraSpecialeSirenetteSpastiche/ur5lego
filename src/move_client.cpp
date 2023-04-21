@@ -46,6 +46,8 @@ int main (int argc, char **argv)
     }
     file.close();
 
+    sleep(3);
+
     int i=0;
     while(ros::ok()){
         ROS_INFO("Sending goal %d", i);
