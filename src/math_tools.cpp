@@ -11,7 +11,7 @@
 /// @param end_a    final acceleration
 /// @return a vector containing the 6 coefficients of the polynomial that describes the joint's position
 Eigen::VectorXd fifthOrderPolynomialTrajectory(float tf, double start_q, double start_v, double start_a, double end_q, double end_v, double end_a){
-    Eigen::Matrix3d poly_matrix;
+    Eigen::MatrixXd poly_matrix(6, 6);
     poly_matrix <<  1,    0,    0,          0,            0,             0,
                     0,    1,    0,          0,            0,             0,
                     0,    0,    2,          0,            0,             0,
@@ -22,7 +22,9 @@ Eigen::VectorXd fifthOrderPolynomialTrajectory(float tf, double start_q, double 
     Eigen::VectorXd poly_vector = Eigen::VectorXd(6);
     poly_vector << start_q, start_v, start_a, end_q, end_v, end_a;
 
-    return poly_matrix.inverse()*poly_vector;
+    Eigen::VectorXd coefficients = poly_matrix.inverse()*poly_vector;
+
+    return coefficients;
 }
 
 
