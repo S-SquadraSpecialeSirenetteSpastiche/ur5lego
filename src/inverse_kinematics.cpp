@@ -1,14 +1,20 @@
 #include "include/inverse_kinematics.h"
 
 
-// implements the inverse kinematics function
 std::pair<Eigen::VectorXd, bool> inverse_kinematics(
+    pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation, Eigen::VectorXd q){
+    
+
+}
+
+// implements the inverse kinematics function
+std::pair<Eigen::VectorXd, bool> inverse_kinematics_old(
     pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation, Eigen::VectorXd q){
 
     const pinocchio::SE3 oMdes(euler_to_rotation_matrix(target_orientation), target_position);
 
     const int JOINT_ID = 6;     // id of the last joint
-    const double eps  = 1e-3;   // exit successfully if norm of the error is less than this
+    const double eps  = 1e-2;   // exit successfully if norm of the error is less than this
     const int IT_MAX  = 1000;   // max iterations before failure
     const double DT   = 1e-2;   // delta time
     const double damp = 1e-6;   // dampling factor
