@@ -1,12 +1,6 @@
 #include "include/inverse_kinematics.h"
 
 
-std::pair<Eigen::VectorXd, bool> inverse_kinematics(
-    pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation, Eigen::VectorXd q){
-    
-
-}
-
 // implements the inverse kinematics function
 std::pair<Eigen::VectorXd, bool> inverse_kinematics_old(
     pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation, Eigen::VectorXd q){
