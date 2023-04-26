@@ -1,6 +1,9 @@
 #include "include/inverse_kinematics.h"
+#include "include/trajectory_planner.h"
+
 #include "pinocchio/parsers/urdf.hpp"
 #include "std_msgs/Float64MultiArray.h"
+
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <actionlib/server/simple_action_server.h>
@@ -42,6 +45,7 @@ public:
 
         const std::string urdf_file = 
             ros::package::getPath("ur5lego") + std::string("/robot_description/ur5.urdf");
+
         pinocchio::urdf::buildModel(urdf_file, model_);
         q = pinocchio::neutral(model_);
 
@@ -52,14 +56,6 @@ public:
     {
     }
 
-    void send_joint_positions(){
-        std_msgs::Float64MultiArray command;
-        command.data.resize(6);
-        for(int i=0; i<6; i++)
-            command.data[i] = (float)q[i];
-        publisher.publish(command);
-    }
-
     void executeCB(const ur5lego::MoveGoalConstPtr &goal){
         ROS_INFO_STREAM("target: " << coordsToStr(
             goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y));
@@ -68,8 +64,8 @@ public:
 
         if(res.second){
             ROS_INFO_STREAM("Convergence achieved!");
+            computeAndSendTrajectory(q, res.first, 3.0, 21, publisher);
             q = res.first;
-            send_joint_positions();
         }
         else{
             ROS_INFO_STREAM("Warning: the iterative algorithm has not reached convergence to the desired precision");
@@ -84,6 +80,7 @@ public:
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "move_server");
+
     MoveAction moveAction("move_server");
     ROS_INFO_STREAM("Server ready");
     ros::spin();
