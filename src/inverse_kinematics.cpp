@@ -2,14 +2,54 @@
 #include <ros/ros.h>
 
 
+void garbage_debug(pinocchio::Model model){
+    pinocchio::Data data(model);
+    pinocchio::FrameIndex frame_id = model.getFrameId("ee_link", (pinocchio::FrameType)pinocchio::BODY);
+    Eigen::VectorXd q(6);
+    pinocchio::SE3 pos_q;
+
+    q[0] = 2.62914;
+    q[1] = -1.74012e+08;
+    q[2] = 3.62552e+08;
+    q[3] = -1.88541e+08;
+    q[4] = 1.93224;
+    q[5] = -8.22739;
+    pinocchio::computeAllTerms(model, data, q, Eigen::VectorXd::Zero(model.nv));
+    pos_q = pinocchio::updateFramePlacement(model, data, frame_id);
+    ROS_INFO_STREAM("q0: " << q);
+    ROS_INFO_STREAM("pos q0: " << pos_q);
+
+    q[0] = 0;
+    q[1] = 0;
+    q[2] = 0;
+    q[3] = 0;
+    q[4] = 0;
+    q[5] = 0;
+    pinocchio::computeAllTerms(model, data, q, Eigen::VectorXd::Zero(model.nv));
+    pos_q = pinocchio::updateFramePlacement(model, data, frame_id);
+    ROS_INFO_STREAM("q1: " << q);
+    ROS_INFO_STREAM("pos q1: " << pos_q);
+
+    q[0] = 2.62914;
+    q[1] = -1.74012e+08;
+    q[2] = 3.62552e+08;
+    q[3] = -1.88541e+08;
+    q[4] = 1.93224;
+    q[5] = -8.22739;
+    pinocchio::computeAllTerms(model, data, q, Eigen::VectorXd::Zero(model.nv));
+    pos_q = pinocchio::updateFramePlacement(model, data, frame_id);
+    ROS_INFO_STREAM("q2: " << q);
+    ROS_INFO_STREAM("pos q2: " << pos_q);
+}
+
 std::pair<Eigen::VectorXd, bool> inverse_kinematics(
-    pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Eigen::VectorXd q){
+    pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Eigen::VectorXd q0){
 
     Eigen::Matrix3d target_orientation = euler_to_rotation_matrix(Eigen::Vector3d(target_orientation_rpy));
-    std::string frame_name = "ee_link";
-    Eigen::VectorXd q0 = Eigen::VectorXd::Zero(model.nv);
+    pinocchio::FrameIndex frame_id = model.getFrameId("ee_link", (pinocchio::FrameType)pinocchio::BODY);
 
-    double e_bar = 1;
+    pinocchio::Data data(model);
+
     double eps = 1e-6;
 
     double alpha = 1, beta = 0.5, gamma = 0.5;
@@ -19,22 +59,87 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
 
     double lambda = 1e-6;
     bool out_of_workspace = false;
+    bool success = false;
 
-    pinocchio::FrameIndex frame_id = pinocchio::getFrameId(frame_name, (pinocchio::FrameType)pinocchio::BODY)
+    // garbage_debug(model);
+    // return std::make_pair(Eigen::VectorXd::Zero(model.nv), false);
 
-    // while(true)
-        myComputeAllTerms(model, data, q0);
-
+    while(true){
+        // myComputeAllTerms(model, data, q0);
+        pinocchio::computeAllTerms(model, data, q0, Eigen::VectorXd::Zero(model.nv));
         pinocchio::SE3 pos_q0 = pinocchio::updateFramePlacement(model, data, frame_id);
+        ROS_INFO_STREAM("q0: " << q0);
+        ROS_INFO_STREAM("pos q0: " << pos_q0);
+
         Eigen::MatrixXd jacobian = Eigen::MatrixXd::Zero(6, model.nv);
         pinocchio::computeFrameJacobian(model, data, q0, frame_id, pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED, jacobian);
 
-        ROS_INFO_STREAM(jacobian);
+        Eigen::VectorXd e_bar_q0(model.nv);
+        e_bar_q0 << (target_position - pos_q0.translation()), (pos_q0.rotation()*pinocchio::log3(pos_q0.rotation().transpose()*target_orientation));
+        Eigen::VectorXd grad(model.nv);
+        grad = jacobian.transpose()*e_bar_q0;
+
+        Eigen::VectorXd dq(model.nv);
+        dq = (jacobian + 1e-8*Eigen::MatrixXd::Identity(6, model.nv)).inverse()*e_bar_q0;
+
+        /*
+        ROS_INFO_STREAM("grad: " << grad);
+        ROS_INFO_STREAM("e_bar: " << e_bar_q0);
+        ROS_INFO_STREAM("dq: " << dq);
+        ROS_INFO_STREAM(" ");
+        */
+
+        if(grad.norm() < eps){
+            success = true;
+            // print("IK Convergence achieved!, norm(grad) :", np.linalg.norm(grad))
+            // print("Inverse kinematics solved in {} iterations".format(niter))
+            if(e_bar_q0.norm() > 0.1){
+                // print("THE END EFFECTOR POSITION IS OUT OF THE WORKSPACE, norm(error) :", np.linalg.norm(e_bar))
+                out_of_workspace = true;
+            }
+            break;
+        }
+        if(niter >= max_iter){
+            success = false;    // per bellezza
+            break;
+        }
+
+        while(true){
+            Eigen::VectorXd q1(model.nv);
+            q1 = q0 + dq * alpha;
+        
+            ROS_INFO_STREAM("q1: " << q1);
+            pinocchio::computeAllTerms(model, data, q1, Eigen::VectorXd::Zero(model.nv));
+            pinocchio::SE3 pos_q1 = pinocchio::updateFramePlacement(model, data, frame_id);
+            ROS_INFO_STREAM("pos q1: " << pos_q1.translation());
+
+            Eigen::VectorXd e_bar_q1(model.nv);
+            e_bar_q1 << (target_position - pos_q1.translation()), (pos_q1.rotation()*pinocchio::log3(pos_q1.rotation().transpose()*target_orientation));
+
+            double improvement = e_bar_q0.norm() - e_bar_q1.norm();
+            float threshold = 0.0;  // even more strict: gamma*alpha*np.linalg.norm(e_bar)
+
+            if(improvement < threshold){
+                alpha *= beta;
+            }
+            else{
+                q0 = q1;
+                alpha = 1;
+                break;
+            }
+        }
+
+        // break; // TOGLIERE APPENA UN'ITERAZIONE VA A BUON FINE
+        niter++;
+    }
+    
+    return std::make_pair(q0, success);
 }
 
 
+// FIXME: dovrebbe fare la stessa cosa di computeAllTerms ma non la fa
 void myComputeAllTerms(pinocchio::Model model, pinocchio::Data data, Eigen::VectorXd q){
-    pinocchio::forwardKinematics(model, data, q);
+    pinocchio::forwardKinematics(model, data, q);   // dovrebbe essere inutile, computeJointJacobians lo fa già
     pinocchio::computeJointJacobians(model, data);
     pinocchio::crba(model, data, q);
     pinocchio::nonLinearEffects(model, data, q, Eigen::VectorXd::Zero(model.nv));

@@ -64,6 +64,8 @@ int main (int argc, char **argv)
             break;
         }
 
+        return 0;   // DA TOGLIERE APPENA IK VA
+
         i++;
         if(i>=n) i=0;
         sleep(1);
