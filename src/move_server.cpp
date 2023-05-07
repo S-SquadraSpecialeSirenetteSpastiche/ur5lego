@@ -37,11 +37,9 @@ protected:
 public:
     MoveAction(std::string name) : action_server_(server_node, name, boost::bind(&MoveAction::executeCB, this, _1), false), action_name_(name)
     {
-        publisher = talker_node.advertise<std_msgs::Float64MultiArray>(
-            "/ur5/joint_group_pos_controller/command", 10);
+        publisher = talker_node.advertise<std_msgs::Float64MultiArray>("/ur5/joint_group_pos_controller/command", 10);
 
-        const std::string urdf_file = 
-            ros::package::getPath("ur5lego") + std::string("/robot_description/ur5.urdf");
+        const std::string urdf_file = ros::package::getPath("ur5lego") + std::string("/robot_description/ur5.urdf");
         pinocchio::urdf::buildModel(urdf_file, model_);
         q = pinocchio::neutral(model_);
 
@@ -61,14 +59,21 @@ public:
     }
 
     void executeCB(const ur5lego::MoveGoalConstPtr &goal){
-        ROS_INFO_STREAM("target: " << coordsToStr(
-            goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y));
+        ROS_INFO_STREAM("target: " << coordsToStr(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y));
         std::pair<Eigen::VectorXd, bool> res = inverse_kinematics(
             model_, Eigen::Vector3d(goal->X, goal->Y, goal->Z), Eigen::Vector3d(goal->r, goal->p, goal->y), q);
 
         if(res.second){
             ROS_INFO_STREAM("Convergence achieved!");
             q = res.first;
+            /*
+            q[0] = -1.00054;
+            q[1] = -3.00216;
+            q[2] = 5.02647;
+            q[3] = -0.68429;
+            q[4] = 2.0476;
+            q[5] = -3.10048;
+            */
             send_joint_positions();
         }
         else{

@@ -2,8 +2,7 @@
 #include <ros/ros.h>
 
 
-void garbage_debug(pinocchio::Model model){
-    pinocchio::Data data(model);
+void garbage_debug(pinocchio::Model &model, pinocchio::Data &data){
     pinocchio::FrameIndex frame_id = model.getFrameId("ee_link", (pinocchio::FrameType)pinocchio::BODY);
     Eigen::VectorXd q(6);
     pinocchio::SE3 pos_q;
@@ -16,30 +15,19 @@ void garbage_debug(pinocchio::Model model){
     q[5] = -8.22739;
     pinocchio::computeAllTerms(model, data, q, Eigen::VectorXd::Zero(model.nv));
     pos_q = pinocchio::updateFramePlacement(model, data, frame_id);
-    ROS_INFO_STREAM("q0: " << q);
-    ROS_INFO_STREAM("pos q0: " << pos_q);
+    ROS_INFO_STREAM("q: " << q);
+    ROS_INFO_STREAM("pos q: " << pos_q);
 
-    q[0] = 0;
-    q[1] = 0;
-    q[2] = 0;
-    q[3] = 0;
-    q[4] = 0;
-    q[5] = 0;
+    q[0] = 2;
+    q[1] = 1;
+    q[2] = 3;
+    q[3] = 2;
+    q[4] = 1;
+    q[5] = 3;
     pinocchio::computeAllTerms(model, data, q, Eigen::VectorXd::Zero(model.nv));
     pos_q = pinocchio::updateFramePlacement(model, data, frame_id);
-    ROS_INFO_STREAM("q1: " << q);
-    ROS_INFO_STREAM("pos q1: " << pos_q);
-
-    q[0] = 2.62914;
-    q[1] = -1.74012e+08;
-    q[2] = 3.62552e+08;
-    q[3] = -1.88541e+08;
-    q[4] = 1.93224;
-    q[5] = -8.22739;
-    pinocchio::computeAllTerms(model, data, q, Eigen::VectorXd::Zero(model.nv));
-    pos_q = pinocchio::updateFramePlacement(model, data, frame_id);
-    ROS_INFO_STREAM("q2: " << q);
-    ROS_INFO_STREAM("pos q2: " << pos_q);
+    ROS_INFO_STREAM("q: " << q);
+    ROS_INFO_STREAM("pos q: " << pos_q);
 }
 
 std::pair<Eigen::VectorXd, bool> inverse_kinematics(
@@ -61,7 +49,6 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
     bool out_of_workspace = false;
     bool success = false;
 
-    // garbage_debug(model);
     // return std::make_pair(Eigen::VectorXd::Zero(model.nv), false);
 
     while(true){
@@ -107,10 +94,10 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
         while(true){
             Eigen::VectorXd q1(model.nv);
             q1 = q0 + dq * alpha;
-        
-            ROS_INFO_STREAM("q1: " << q1);
+
             pinocchio::computeAllTerms(model, data, q1, Eigen::VectorXd::Zero(model.nv));
             pinocchio::SE3 pos_q1 = pinocchio::updateFramePlacement(model, data, frame_id);
+            ROS_INFO_STREAM("q1: " << q1);
             ROS_INFO_STREAM("pos q1: " << pos_q1);
 
             Eigen::VectorXd e_bar_q1(model.nv);
@@ -129,7 +116,7 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
             }
         }
 
-        // break; // TOGLIERE APPENA UN'ITERAZIONE VA A BUON FINE
+        break; // TOGLIERE APPENA UN'ITERAZIONE VA A BUON FINE
         niter++;
     }
 
