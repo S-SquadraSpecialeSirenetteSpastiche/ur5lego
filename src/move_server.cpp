@@ -32,7 +32,7 @@ protected:
     ur5lego::MoveResult result_;
     
     pinocchio::Model model_;
-    Eigen::VectorXd q;  // current configuration, assumed neutral at start
+    Eigen::VectorXd q;  // current configuration
 
 public:
     MoveAction(std::string name) : action_server_(server_node, name, boost::bind(&MoveAction::executeCB, this, _1), false), action_name_(name)
@@ -41,7 +41,9 @@ public:
 
         const std::string urdf_file = ros::package::getPath("ur5lego") + std::string("/robot_description/ur5.urdf");
         pinocchio::urdf::buildModel(urdf_file, model_);
-        q = pinocchio::neutral(model_);
+        // q = pinocchio::neutral(model_);
+        q = Eigen::VectorXd(6);
+        q << -0.32, -0.78, -2.56, -1.63, -1.57, 3.49;
 
         action_server_.start();
     }
