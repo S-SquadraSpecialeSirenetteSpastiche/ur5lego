@@ -22,14 +22,6 @@
 		<arg name="world_name" value="$(find ur5lego)/worlds/tavolo.world"/>
         <arg name="paused" default="false" />
     </include>
-
-    <!-- load the controllers configuration files -->
-    <rosparam file="$(find ur5lego)/robot_description/config/joint_state_publisher.yaml" ns="/$(arg robot_name)" command="load"/>
-    <rosparam file="$(find ur5lego)/robot_description/config/controllers_config.yaml" ns="/$(arg robot_name)" command="load"/>
-
-    <!-- load the controllers on the same namespace as the robot -->
-    <node name="joint_state_publisher_spawner" pkg="controller_manager" type="spawner" respawn="false"
-        output="screen" ns="/$(arg robot_name)" args="joint_state_publisher joint_group_pos_controller"/>
     
     <!-- spawn the robot described in robot_description into Gazebo -->
     <include file="$(find ur5lego)/launch/spawn_robot.launch">
