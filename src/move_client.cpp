@@ -66,7 +66,7 @@ int main (int argc, char **argv)
 
         i++;
         if(i>=n) i=0;
-        sleep(3);
+        sleep(1);
     }
 
     delete[] goals;
