@@ -1,5 +1,5 @@
 <launch>
     <include file="$(find ur5lego)/launch/start_gazebo.launch"></include>
     <include file="$(find ur5lego)/launch/move_server.launch"></include>
-    <include file="$(find ur5lego)/launch/move_client.launch"></include>
+    <!--<include file="$(find ur5lego)/launch/move_client.launch"></include>-->
 </launch>

@@ -16,6 +16,7 @@ std::string coordsToStr(float a, float b, float c, float d, float e, float f){
     return s;
 }
 
+
 class MoveAction
 {
 protected:
@@ -41,9 +42,10 @@ public:
 
         const std::string urdf_file = ros::package::getPath("ur5lego") + std::string("/robot_description/ur5.urdf");
         pinocchio::urdf::buildModel(urdf_file, model_);
-        // q = pinocchio::neutral(model_);
+        // homing position
         q = Eigen::VectorXd(6);
         q << -0.32, -0.78, -2.56, -1.63, -1.57, 3.49;
+        // send_joint_positions();
 
         action_server_.start();
     }
@@ -62,20 +64,12 @@ public:
 
     void executeCB(const ur5lego::MoveGoalConstPtr &goal){
         ROS_INFO_STREAM("target: " << coordsToStr(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y));
-        std::pair<Eigen::VectorXd, bool> res = inverse_kinematics(
+        std::pair<Eigen::VectorXd, bool> res = inverse_kinematics_bad(
             model_, Eigen::Vector3d(goal->X, goal->Y, goal->Z), Eigen::Vector3d(goal->r, goal->p, goal->y), q);
 
         if(res.second){
             ROS_INFO_STREAM("Convergence achieved!");
             q = res.first;
-            /*
-            q[0] = -1.00054;
-            q[1] = -3.00216;
-            q[2] = 5.02647;
-            q[3] = -0.68429;
-            q[4] = 2.0476;
-            q[5] = -3.10048;
-            */
             send_joint_positions();
         }
         else{
@@ -93,6 +87,48 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "move_server");
     MoveAction moveAction("move_server");
     ROS_INFO_STREAM("Server ready");
+
+    /*
+    pinocchio::Model model;
+    const std::string urdf_file = ros::package::getPath("ur5lego") + std::string("/robot_description/ur5.urdf");
+    pinocchio::urdf::buildModel(urdf_file, model);
+
+    Eigen::VectorXd q, q_ik, q_ik_bad;
+    std::pair<Eigen::VectorXd, bool> ik_res, ik_bad_res;
+
+    double k = 0.05;
+    double X=-0.3, Y=-0.3, Z=0.6, r=0, p=0, y=0;
+    std::vector<double> p0 = {X,    Y,      Z,      r, p, y};
+    std::vector<double> p1 = {X+k,  Y,      Z,      r, p, y};
+    std::vector<double> p2 = {X,    Y+k,    Z,      r, p, y};
+    std::vector<double> p3 = {X,    Y,      Z+k,    r, p, y};
+    std::vector<double> p4 = {X+k,  Y+k,    Z,      r, p, y};
+    std::vector<double> p5 = {X+k,  Y,      Z+k,    r, p, y};
+    std::vector<double> p6 = {X,    Y+k,    Z+k,    r, p, y};
+    std::vector<double> p7 = {X+k,  Y+k, k, Z+k,    r, p, y};
+    std::vector<std::vector<double>> destinations = {p0, p1, p2, p3, p4, p5, p6, p7};
+
+    q = Eigen::VectorXd(6);
+    q << -0.32, -0.78, -2.56, -1.63, -1.57, 3.49;
+
+    int i=0;
+    for(std::vector<double> p : destinations){
+        ik_res = inverse_kinematics(model, Eigen::Vector3d(p[0], p[1], p[2]), Eigen::Vector3d(p[3], p[4], p[5]), q);
+        ik_bad_res = inverse_kinematics_bad(model, Eigen::Vector3d(p[0], p[1], p[2]), Eigen::Vector3d(p[3], p[4], p[5]), q);
+
+        if(ik_res.second && ik_bad_res.second){
+            ROS_INFO_STREAM("Test p" << i << " solutions: ");
+            ROS_INFO_STREAM(ik_res.first[0] << " " << ik_res.first[1] << " " << ik_res.first[2] << " " << ik_res.first[3] 
+                << " " << ik_res.first[4] << " " << ik_res.first[5] << " ");
+            ROS_INFO_STREAM(ik_bad_res.first[0] << " " << ik_bad_res.first[1] << " " << ik_bad_res.first[2] << " " << ik_bad_res.first[3] 
+                << " " << ik_bad_res.first[4] << " " << ik_bad_res.first[5] << " ");
+        } else {
+            ROS_INFO_STREAM("Test p" << i << " failed: " << ik_res.second << " " << ik_bad_res.second);
+        }
+        i++;
+    }
+    */
+
     ros::spin();
 
     return 0;

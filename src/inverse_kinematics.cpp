@@ -1,34 +1,19 @@
 #include "include/inverse_kinematics.h"
 #include <ros/ros.h>
 
+/*
+The damping constant λ depends on the details of the multibody and the target
+positions and must be chosen carefully to make DLS numerically stable.
+It should large enough so that the solutions for ∆θ are well-behaved near
+singularities but not so large that the convergence rate is too slow
+*/
 
-void garbage_debug(pinocchio::Model &model, pinocchio::Data &data){
-    pinocchio::FrameIndex frame_id = model.getFrameId("ee_link", (pinocchio::FrameType)pinocchio::BODY);
-    Eigen::VectorXd q(6);
-    pinocchio::SE3 pos_q;
 
-    q[0] = 2.62914;
-    q[1] = -1.74012e+08;
-    q[2] = 3.62552e+08;
-    q[3] = -1.88541e+08;
-    q[4] = 1.93224;
-    q[5] = -8.22739;
+pinocchio::SE3 compute_position(pinocchio::Model &model, pinocchio::Data &data, Eigen::VectorXd q, pinocchio::FrameIndex frame_id){
     pinocchio::computeAllTerms(model, data, q, Eigen::VectorXd::Zero(model.nv));
-    pos_q = pinocchio::updateFramePlacement(model, data, frame_id);
-    ROS_INFO_STREAM("q: " << q);
-    ROS_INFO_STREAM("pos q: " << pos_q);
-
-    q[0] = 2;
-    q[1] = 1;
-    q[2] = 3;
-    q[3] = 2;
-    q[4] = 1;
-    q[5] = 3;
-    pinocchio::computeAllTerms(model, data, q, Eigen::VectorXd::Zero(model.nv));
-    pos_q = pinocchio::updateFramePlacement(model, data, frame_id);
-    ROS_INFO_STREAM("q: " << q);
-    ROS_INFO_STREAM("pos q: " << pos_q);
+    return pinocchio::updateFramePlacement(model, data, frame_id);
 }
+
 
 std::pair<Eigen::VectorXd, bool> inverse_kinematics(
     pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Eigen::VectorXd q0){
@@ -39,7 +24,6 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
     pinocchio::Data data(model);
 
     double eps = 1e-6;
-
     double alpha = 1, beta = 0.5, gamma = 0.5;
 
     int niter = 0;
@@ -49,15 +33,17 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
     bool out_of_workspace = false;
     bool success = false;
 
-    // return std::make_pair(Eigen::VectorXd::Zero(model.nv), false);
 
     while(true){
-        // myComputeAllTerms(model, data, q0);
+        //TODO: non tutti questi updateFramePlacements servono
+        pinocchio::updateFramePlacements(model, data);
         pinocchio::computeAllTerms(model, data, q0, Eigen::VectorXd::Zero(model.nv));
+        pinocchio::updateFramePlacements(model, data);
         pinocchio::SE3 pos_q0 = pinocchio::updateFramePlacement(model, data, frame_id);
-        ROS_INFO_STREAM("q0: " << q0);
-        ROS_INFO_STREAM("pos q0: " << pos_q0);
+        pinocchio::updateFramePlacements(model, data);
 
+        // ROS_INFO_STREAM(pos_q0.translation());
+    
         Eigen::MatrixXd jacobian = Eigen::MatrixXd::Zero(6, model.nv);
         pinocchio::computeFrameJacobian(model, data, q0, frame_id, pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED, jacobian);
 
@@ -68,13 +54,6 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
 
         Eigen::VectorXd dq(model.nv);
         dq = (jacobian + 1e-8*Eigen::MatrixXd::Identity(6, model.nv)).inverse()*e_bar_q0;
-
-        /*
-        ROS_INFO_STREAM("grad: " << grad);
-        ROS_INFO_STREAM("e_bar: " << e_bar_q0);
-        ROS_INFO_STREAM("dq: " << dq);
-        ROS_INFO_STREAM(" ");
-        */
 
         if(grad.norm() < eps){
             success = true;
@@ -91,14 +70,14 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
             break;
         }
 
+        Eigen::VectorXd q1(model.nv);
+
         while(true){
-            Eigen::VectorXd q1(model.nv);
             q1 = q0 + dq * alpha;
 
+            pinocchio::SE3 pos_q1;
             pinocchio::computeAllTerms(model, data, q1, Eigen::VectorXd::Zero(model.nv));
-            pinocchio::SE3 pos_q1 = pinocchio::updateFramePlacement(model, data, frame_id);
-            ROS_INFO_STREAM("q1: " << q1);
-            ROS_INFO_STREAM("pos q1: " << pos_q1);
+            pos_q1 = pinocchio::updateFramePlacement(model, data, frame_id);
 
             Eigen::VectorXd e_bar_q1(model.nv);
             e_bar_q1 << (target_position - pos_q1.translation()), (pos_q1.rotation()*pinocchio::log3(pos_q1.rotation().transpose()*target_orientation));
@@ -115,8 +94,6 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
                 break;
             }
         }
-
-        break; // TOGLIERE APPENA UN'ITERAZIONE VA A BUON FINE
         niter++;
     }
 
@@ -127,7 +104,7 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
             q0[i] += 2*3.1415927;
     }
 
-    ROS_INFO_STREAM("q: " << q0);
+    // ROS_INFO_STREAM("q: " << q0);
     
     return std::make_pair(q0, success);
 }
@@ -214,7 +191,15 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics_bad(
         q = pinocchio::integrate(model, q, v*DT);
     }
     
-    ROS_INFO_STREAM("iterations: " << i);
+    // ROS_INFO_STREAM("iterations: " << i);
+    // ROS_INFO_STREAM("q: " << q);
+
+    for(int i=0; i<model.nv; i++){
+        while(q[i] >= 2*3.1415927)
+            q[i] -= 2*3.1415927;
+        while(q[i] <= -2*3.1415927)
+            q[i] += 2*3.1415927;
+    }
 
     return std::make_pair(q, success);
 }

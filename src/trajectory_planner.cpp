@@ -23,8 +23,8 @@ void computeAndSendTrajectory(Eigen::VectorXd q, Eigen::VectorXd qf, float t, in
         }
 
         // publish q, v, and a here
-
+        
         time += dt;
-        rate.sleep();
+        send_position_rate.sleep();
     }
 }
