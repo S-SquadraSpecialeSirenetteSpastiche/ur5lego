@@ -22,7 +22,7 @@ void computeAndSendTrajectory(Eigen::VectorXd q, Eigen::VectorXd qf, float t, in
     double eps = 1e-6;
     float dt = t/steps;
     float time = 0;
-    ros::Rate rate(dt);
+    ros::Rate send_position_rate(dt);
 
     Eigen::VectorXd v(6), a(6);
     Eigen::VectorXd c;    /* coefficienti del polinomio */
@@ -39,10 +39,10 @@ void computeAndSendTrajectory(Eigen::VectorXd q, Eigen::VectorXd qf, float t, in
         }
 
         send_joint_positions(publisher, q);
-
+        
         time += dt;
-        rate.sleep();
+        send_position_rate.sleep();
     }
 
-    send_joint_positions(publisher, qf);
+    // send_joint_positions(publisher, qf);
 }

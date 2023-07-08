@@ -3,3 +3,5 @@
 -0.35 0.3 0.25 1.5707 0 0
 -0.35 0.3 0.35 1.5707 0 0
 -0.35 0.3 0.25 1.5707 0 0
+
+polso girato verso il basso e si muove principalmente lungo l'asse x

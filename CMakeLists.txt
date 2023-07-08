@@ -5,6 +5,7 @@ project(ur5lego)
 set(pinocchio_DIR "/opt/openrobots/lib/cmake/pinocchio/")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include/eigen3 -w")
 
+
 find_package(catkin REQUIRED COMPONENTS roscpp rospy roslib pinocchio actionlib_msgs actionlib)
 
 add_action_files(
@@ -34,3 +35,6 @@ target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES} pinocchio::pinocch
 add_executable(ur5lego_move_client src/move_client.cpp)
 target_link_libraries(ur5lego_move_client ${catkin_LIBRARIES})
 # add_dependencies(ur5lego_move_client ${ur5lego_EXPORTED_TARGETS})
+
+
+install(PROGRAMS scripts/send_homing_angles.bash DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

@@ -1,9 +1,21 @@
 <launch>
-    <arg name="robot_name"/>
+    <arg name="robot_name" default="ur5" />
     <arg name="spawn_x" default="0.5" />
 	<arg name="spawn_y" default="0.35" />
 	<arg name="spawn_z" default="1.8" />
     
+    <!-- load the controllers configuration files -->
+    <rosparam file="$(find ur5lego)/robot_description/config/joint_state_publisher.yaml" ns="/$(arg robot_name)" command="load"/>
+    <rosparam file="$(find ur5lego)/robot_description/config/controllers_config.yaml" ns="/$(arg robot_name)" command="load"/>
+
+    <!-- load the controllers on the same namespace as the robot -->
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false"
+        output="screen" ns="/$(arg robot_name)" args="joint_state_publisher joint_group_pos_controller"/>
+
+    <!-- spawn the model -->
     <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model"
         args="-urdf -param robot_description -model ur5 -robot_namespace /$(arg robot_name) -x $(arg spawn_x) -y $(arg spawn_y) -z $(arg spawn_z)"/>
+
+    <!-- send homing position to the new robot -->
+    <node name="homing_angles_sender" pkg="ur5lego" type="send_homing_angles.bash" output="screen" />
 </launch>
