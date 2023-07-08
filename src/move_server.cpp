@@ -64,7 +64,7 @@ public:
 
         if(res.second){
             ROS_INFO_STREAM("Convergence achieved!");
-            computeAndSendTrajectory(q, res.first, 3.0, 21, publisher);
+            computeAndSendTrajectory(q, res.first, 3.0, 1000, publisher);
             q = res.first;
         }
         else{
