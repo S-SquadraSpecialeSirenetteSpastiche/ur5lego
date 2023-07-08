@@ -1,28 +1,6 @@
 #include "include/trajectory_planner.h"
 
 
-Eigen::VectorXd fifthOrderPolynomialTrajectory(float tf, double start_q, double start_v, double start_a, double end_q, double end_v, double end_a){
-    Eigen::MatrixXd poly_matrix(6, 6);
-    poly_matrix <<  1,    0,    0,          0,            0,             0,
-                    0,    1,    0,          0,            0,             0,
-                    0,    0,    2,          0,            0,             0,
-                    1,    tf,   pow(tf,2),  pow(tf, 3),   pow(tf, 4),    pow(tf, 5),
-                    0,    1,    2*tf,       3*pow(tf,2),  4*pow(tf,3),   5*pow(tf,4),
-                    0,    0,    2,          6*tf,         12*pow(tf,2),  20*pow(tf,3);
-
-    Eigen::VectorXd poly_vector = Eigen::VectorXd(6);
-    poly_vector << start_q, start_v, start_a, end_q, end_v, end_a;
-
-    Eigen::VectorXd coefficients = poly_matrix.inverse()*poly_vector;
-
-    return coefficients;
-}
-
-Eigen::VectorXd fifthOrderPolynomialTrajectory(float tf, double start_q, double end_q){
-    return fifthOrderPolynomialTrajectory(tf, start_q, 0, 0, end_q, 0,0);
-}
-
-
 /// @brief sends the joint angles with a given publisher
 /// @param publisher the publisher instance that will send the vector
 /// @param q         the vector to send
