@@ -20,9 +20,10 @@ int main (int argc, char **argv)
     ROS_INFO("Action server started, sending goal.");
     // send a goal to the action
 
-    std::ifstream file("/home/utente/my_ws/src/ur5lego/src/dest.txt");
+    std::ifstream file("/home/utente/Desktop/squadraSpecialeSirenetteSpastiche/lego_catkin_ws/src/ur5lego/src/dest.txt");
     int n;
     file >> n;
+    ROS_INFO_STREAM(n);
 
     ur5lego::MoveGoal *goals = new ur5lego::MoveGoal[n];
 
