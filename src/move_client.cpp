@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+#include <ros/package.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 #include <ur5lego/MoveAction.h>
@@ -20,7 +21,7 @@ int main (int argc, char **argv)
     ROS_INFO("Action server started, sending goal.");
     // send a goal to the action
 
-    std::ifstream file("/home/utente/Desktop/squadraSpecialeSirenetteSpastiche/lego_catkin_ws/src/ur5lego/src/dest.txt");
+    std::ifstream file(ros::package::getPath("ur5lego") + std::string("/src/dest.txt"));
     int n;
     file >> n;
     ROS_INFO_STREAM(n);
