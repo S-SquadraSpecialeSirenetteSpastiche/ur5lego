@@ -53,3 +53,21 @@ void computeAndSendTrajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float t, i
 
     // send_joint_positions(publisher, qf);
 }
+
+/// @brief computes and sends the joint angles to go to a desired position in a cpecific time frame
+/// @param model                    the model of the robot
+/// @param target_position          the desired end effector position
+/// @param target_orientation_rpy   the desired end effector orientation expressed in euler angles
+/// @param q0                       the current joint configuration
+/// @return true if it succeeds, false otherwise
+bool compute_and_send_trajectory_2(pinocchio::Model model, Eigen::Vector3d target_position, 
+    Eigen::Vector3d target_orientation_rpy, Eigen::VectorXd q0){
+    //TODO: non tutti questi updateFramePlacements servono
+    pinocchio::updateFramePlacements(model, data);
+    pinocchio::computeAllTerms(model, data, q0, Eigen::VectorXd::Zero(model.nv));
+    pinocchio::updateFramePlacements(model, data);
+    pinocchio::SE3 pos_q0 = pinocchio::updateFramePlacement(model, data, frame_id);
+    pinocchio::updateFramePlacements(model, data);
+
+    
+}

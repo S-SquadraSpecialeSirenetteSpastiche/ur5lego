@@ -59,22 +59,13 @@ public:
 
     void executeCB(const ur5lego::MoveGoalConstPtr &goal){
         ROS_INFO_STREAM("target: " << coordsToStr(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y));
-        std::pair<Eigen::VectorXd, bool> res = inverse_kinematics_bad(
+
+        bool success = compute_and_send_trajectory_2(
             model_, Eigen::Vector3d(goal->X, goal->Y, goal->Z), Eigen::Vector3d(goal->r, goal->p, goal->y), q);
 
-        if(res.second){
-            ROS_INFO_STREAM("Convergence achieved!");
-            computeAndSendTrajectory(q, res.first, 3.0, 1000, publisher);
-            q = res.first;
-        }
-        else{
-            ROS_INFO_STREAM("Warning: the iterative algorithm has not reached convergence to the desired precision");
-        }
-
-        result_.success = res.second;
+        result_.success = success;
         action_server_.setSucceeded(result_);
     }
-
 };
 
 int main(int argc, char **argv)
