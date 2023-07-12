@@ -28,7 +28,7 @@ add_library(math src/math_tools.cpp)
 add_library(inverse_kinematics src/inverse_kinematics.cpp)
 add_library(trajectory src/trajectory_planner.cpp)
 
-target_link_libraries(trajectory ${catkin_LIBRARIES} math)
+target_link_libraries(trajectory ${catkin_LIBRARIES} math inverse_kinematics)
 
 add_executable(ur5lego_move_server src/move_server.cpp)
 target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES} pinocchio::pinocchio inverse_kinematics math trajectory)

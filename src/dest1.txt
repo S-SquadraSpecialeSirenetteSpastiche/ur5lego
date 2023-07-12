@@ -5,3 +5,4 @@
 -0.3 0.2 0.3 2 0.5 0.5
 
 posizioni a caso storte ma raggiungibili
+gli angoli funzionano sono riferiti al frame usato dall'algoritmo di cinematica di esempio di pinocchio (inverse_kinematics_bad)

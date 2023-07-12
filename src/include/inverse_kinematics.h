@@ -12,7 +12,7 @@
 
 void myComputeAllTerms(pinocchio::Model model, pinocchio::Data data, Eigen::VectorXd q);
 
-Eigen::Matrix3d euler_to_rotation_matrix(Eigen::Vector3d rpy);
+Eigen::Matrix3d euler_to_rotation_matrix(Eigen::Vector3d rpy);  // TODO: spostare questa in math_tools
 
 std::pair<Eigen::VectorXd, bool> inverse_kinematics(
     pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation, Eigen::VectorXd q);

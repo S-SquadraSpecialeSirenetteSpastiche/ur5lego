@@ -28,10 +28,6 @@ void computeAndSendTrajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float t, i
     Eigen::VectorXd v(6), a(6);
     Eigen::VectorXd c;    // coefficienti del polinomio
 
-    ROS_INFO_STREAM("   dt " << dt);
-    ROS_INFO_STREAM("   inizio " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << " " << q[4] << " " << q[5] << " ");
-    ROS_INFO_STREAM("   fine " << qf[0] << " " << qf[1] << " " << qf[2] << " " << qf[3] << " " << qf[4] << " "<< qf[5] << " ");
-
     // itero fino a che tutti i valori di q e qf sono distanti meno di eps
     // la seconda espressione si occupa delle differenze negative
     while((q-qf).maxCoeff() > eps || -1*(q-qf).minCoeff() > eps ){
@@ -54,20 +50,105 @@ void computeAndSendTrajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float t, i
     // send_joint_positions(publisher, qf);
 }
 
-/// @brief computes and sends the joint angles to go to a desired position in a cpecific time frame
-/// @param model                    the model of the robot
-/// @param target_position          the desired end effector position
-/// @param target_orientation_rpy   the desired end effector orientation expressed in euler angles
-/// @param q0                       the current joint configuration
+
+/// @brief computes and sends the joint angles to go to a desired position in a specific time frame
+/// the trajectory is a line (TODO: it is not a line yet) that starts from the current position (obtained from q0) and ends to the desired one
+/// @param model                the model of the robot
+/// @param target_position      desired end effector position
+/// @param target_rotation   desired end effector rotation expressed in euler angles
+/// @param q0                   current joint configuration
+/// @param time_to_move         seconds to complete the movement
 /// @return true if it succeeds, false otherwise
 bool compute_and_send_trajectory_2(pinocchio::Model model, Eigen::Vector3d target_position, 
-    Eigen::Vector3d target_orientation_rpy, Eigen::VectorXd q0){
+    Eigen::Vector3d target_rotation, Eigen::VectorXd q0, float time_to_move, ros::Publisher publisher){
+
+    double max_step_size_position = 0.05;   // max meters per step
+    double max_step_size_rotation = 0.05;   // max radiants per step
+
+    pinocchio::Data data(model);
+    pinocchio::FrameIndex frame_id = model.getFrameId("ee_link", (pinocchio::FrameType)pinocchio::BODY);
+
     //TODO: non tutti questi updateFramePlacements servono
     pinocchio::updateFramePlacements(model, data);
     pinocchio::computeAllTerms(model, data, q0, Eigen::VectorXd::Zero(model.nv));
     pinocchio::updateFramePlacements(model, data);
-    pinocchio::SE3 pos_q0 = pinocchio::updateFramePlacement(model, data, frame_id);
+    pinocchio::SE3 start_pos = pinocchio::updateFramePlacement(model, data, frame_id);
     pinocchio::updateFramePlacements(model, data);
 
-    
+    Eigen::VectorXd difference_pos(3);  // difference between current XYZ value and desired one
+    Eigen::VectorXd difference_rot(3);  // difference between current rpy value and desired one
+
+    ROS_INFO_STREAM("posizione iniziale: " << start_pos.translation());
+
+    for(int i=0; i<3; i++){
+        difference_pos[i] = std::abs(target_position[i] - start_pos.translation()(i));
+        difference_rot[i] = std::abs(target_rotation[i] - start_pos.rotation()(i));
+    }
+
+    // calcolo il numero di passi nel percorso
+    double max_diff_pos=0, max_diff_rot=0;
+    for(int i=0; i<3; i++){
+        max_diff_pos = std::max(difference_pos[i], max_diff_pos);
+        max_diff_rot = std::max(difference_rot[i], max_diff_rot);
+    }
+    int steps_for_max_pos = std::ceil(max_diff_pos/max_step_size_position);
+    int steps_for_max_rot = std::ceil(max_diff_rot/max_step_size_rotation);
+    int n_steps = std::max(steps_for_max_pos, steps_for_max_rot);
+
+    ROS_INFO_STREAM("n step: " << n_steps);
+
+    // calcolo la dimensione dei passi
+    Eigen::VectorXd step_size(6);
+    for(int i=0; i<3; i++)
+        step_size[i] = difference_pos[i]/(double)n_steps;
+    for(int i=0; i<3; i++)
+        step_size[i+3] = difference_rot[i]/(double)n_steps;
+
+    ROS_INFO_STREAM("step sizes: " << step_size);
+
+    // per ogni passo calcolo la cinematica inversa
+    // l'algoritmo che calcola la cinematica inversa è veloce perchè la differenza dall'ultima posizione è piccola
+    Eigen::VectorXd q(6);   // angoli joint attuali
+    Eigen::Vector3d position_sofar = start_pos.translation();
+    Eigen::Vector3d orientation_sofar = pinocchio::rpy::matrixToRpy(start_pos.rotation());
+    q = q0;
+    for(int i=0; i<n_steps; i++){
+        std::pair<Eigen::VectorXd, bool> pos_sofar = inverse_kinematics(model, position_sofar, orientation_sofar, q);
+        if(!pos_sofar.second)
+            return false;
+        q = pos_sofar.first;
+
+        for(int j=0; j<3; j++){
+            position_sofar[j] += step_size[j];
+            orientation_sofar[j] += step_size[j+3];
+        }
+        // ROS_INFO_STREAM("pos so far: " << position_sofar);
+    }
+
+    ROS_INFO_STREAM("posizione finale: " << position_sofar);
+    ROS_INFO_STREAM("q finale: " << q);
+
+    // send_joint_positions(publisher, q);
+    computeAndSendTrajectory(q0, q, time_to_move, 1000, publisher);
+
+    return true;
+
+    // calcolo la dimensione dei passi e dei resti
+    /*
+    double step_size_position[3], step_size_rotation[3], remainder_position[3], remainder_rotation[3];
+    for(int i=0; i<3; i++){
+        step_size_position[i] = difference[i]/n_steps;
+        step_size_rotation[i] = difference[i+3]/n_steps;
+        remainder_position[i] = target_pos[i] - step_size_position[i]*n_steps;
+        remainder_position[i] = target_rot[i] - step_size_rotation[i]*n_steps;
+    }
+    */
+
+    /*
+    Eigen::Vector3d step_size_position(difference[0]/n_steps, difference[1]/n_steps, difference[2]/n_steps);
+    Eigen::Vector3d step_size_rotation(difference[3]/n_steps, difference[4]/n_steps, difference[5]/n_steps);
+    Eigen::Vector3d remainder_position(target_pos[0]-step_size_position[0]*n_steps, target_pos[1]-step_size_position[1]*n_steps, target_pos[2]-step_size_position[2]*n_steps);
+    Eigen::Vector3d remainder_rotation(target_rot[0]-step_size_rotation[0]*n_steps, target_rot[1]-step_size_rotation[1]*n_steps, target_rot[2]-step_size_rotation[2]*n_steps);
+    */
+
 }

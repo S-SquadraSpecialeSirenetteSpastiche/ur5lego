@@ -61,7 +61,7 @@ public:
         ROS_INFO_STREAM("target: " << coordsToStr(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y));
 
         bool success = compute_and_send_trajectory_2(
-            model_, Eigen::Vector3d(goal->X, goal->Y, goal->Z), Eigen::Vector3d(goal->r, goal->p, goal->y), q);
+            model_, Eigen::Vector3d(goal->X, goal->Y, goal->Z), Eigen::Vector3d(goal->r, goal->p, goal->y), q, 2, publisher);
 
         result_.success = success;
         action_server_.setSucceeded(result_);

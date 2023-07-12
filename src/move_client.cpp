@@ -64,7 +64,7 @@ int main (int argc, char **argv)
             ROS_INFO("Action did not finish before the time out.");
             break;
         }
-
+        break;
         i++;
         if(i>=n) i=0;
         sleep(0.2);
