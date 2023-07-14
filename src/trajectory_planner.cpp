@@ -14,7 +14,7 @@ void send_joint_positions(ros::Publisher publisher, Eigen::VectorXd q){
 
 
 /// @brief sends the commands to bring the joints from a position to another
-/// @param q        the startiong joint positions
+/// @param qi       the startiong joint positions
 /// @param qf       the target joint positions
 /// @param t        the time to go from the starting position to the target
 /// @param steps    the number of commands to send
