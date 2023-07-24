@@ -1,17 +1,44 @@
 #include "include/inverse_kinematics.h"
-#include <ros/ros.h>
-
-/*
-The damping constant λ depends on the details of the multibody and the target
-positions and must be chosen carefully to make DLS numerically stable.
-It should large enough so that the solutions for ∆θ are well-behaved near
-singularities but not so large that the convergence rate is too slow
-*/
 
 
-pinocchio::SE3 compute_position(pinocchio::Model &model, pinocchio::Data &data, Eigen::VectorXd q, pinocchio::FrameIndex frame_id){
+std::pair<Eigen::VectorXd, bool> inverse_kinematics_wrapper(
+    pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Eigen::VectorXd q0){
+    
+    pinocchio::Data data(model);
+    pinocchio::FrameIndex frame_id = model.getFrameId("ee_link", (pinocchio::FrameType)pinocchio::BODY);
+
+    pinocchio::computeAllTerms(model, data, q0, Eigen::VectorXd::Zero(model.nv));
+    pinocchio::SE3 start_pos = pinocchio::updateFramePlacement(model, data, frame_id);
+
+    int n_steps = 10;
+
+    Eigen::VectorXd q(6);
+    Eigen::Vector3d position_sofar = start_pos.translation();
+    Eigen::Vector3d orientation_sofar = pinocchio::rpy::matrixToRpy(start_pos.rotation());
+    q = q0;
+
+    double step_size[6];    // non è proprio una dimensione perchè potrebbe essere negativa ma così è più comodo sommarla
+    for(int i=0; i<3; i++){
+        step_size[i] = (target_position[i] - position_sofar[i])/(double)n_steps;
+        step_size[i+3] = (target_orientation_rpy[i] - orientation_sofar[i])/(double)n_steps;
+    }
+
+    for(int i=0; i<n_steps; i++){
+        for(int j=0; j<3; j++){
+            position_sofar[j] += step_size[j];
+            orientation_sofar[j] += step_size[j+3];
+        }
+
+        std::pair<Eigen::VectorXd, bool> ikresult = inverse_kinematics(model, position_sofar, orientation_sofar, q);
+        if(!ikresult.second)
+            return std::make_pair(q, false);    // il valore di q qui è irrilevante perchè l'algoritmo non ha avuto successo
+        q = ikresult.first;
+    }
+
     pinocchio::computeAllTerms(model, data, q, Eigen::VectorXd::Zero(model.nv));
-    return pinocchio::updateFramePlacement(model, data, frame_id);
+    pinocchio::SE3 end_pos = pinocchio::updateFramePlacement(model, data, frame_id);
+
+    return std::make_pair(q, true);
 }
 
 
@@ -26,66 +53,63 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
     double eps = 1e-6;
     double alpha = 1, beta = 0.5, gamma = 0.5;
 
-    int niter = 0;
+    int niter = 0;  // iterations so far
     int max_iter = 200;
 
-    double lambda = 1e-6;
+    double lambda = 1e-8;
     bool out_of_workspace = false;
     bool success = false;
 
 
-    while(true){
-        //TODO: non tutti questi updateFramePlacements servono
-        pinocchio::updateFramePlacements(model, data);
+    while(true){ 
+        // compute position and orientation of the ee with the current guess
         pinocchio::computeAllTerms(model, data, q0, Eigen::VectorXd::Zero(model.nv));
-        pinocchio::updateFramePlacements(model, data);
         pinocchio::SE3 pos_q0 = pinocchio::updateFramePlacement(model, data, frame_id);
-        pinocchio::updateFramePlacements(model, data);
 
-        // ROS_INFO_STREAM(pos_q0.translation());
-    
+        // compute the jacobian in q0
         Eigen::MatrixXd jacobian = Eigen::MatrixXd::Zero(6, model.nv);
         pinocchio::computeFrameJacobian(model, data, q0, frame_id, pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED, jacobian);
 
+        // compute the error between the current position and the desired one
         Eigen::VectorXd e_bar_q0(model.nv);
-        e_bar_q0 << (target_position - pos_q0.translation()), (pos_q0.rotation()*pinocchio::log3(pos_q0.rotation().transpose()*target_orientation));
+        e_bar_q0 << target_position - pos_q0.translation(), errorInSO3(pos_q0.rotation(), target_orientation);
         Eigen::VectorXd grad(model.nv);
         grad = jacobian.transpose()*e_bar_q0;
 
-        Eigen::VectorXd dq(model.nv);
-        dq = (jacobian + 1e-8*Eigen::MatrixXd::Identity(6, model.nv)).inverse()*e_bar_q0;
-
+        // if the error is small enough, we're done
         if(grad.norm() < eps){
             success = true;
-            // print("IK Convergence achieved!, norm(grad) :", np.linalg.norm(grad))
-            // print("Inverse kinematics solved in {} iterations".format(niter))
             if(e_bar_q0.norm() > 0.1){
-                // print("THE END EFFECTOR POSITION IS OUT OF THE WORKSPACE, norm(error) :", np.linalg.norm(e_bar))
                 out_of_workspace = true;
             }
             break;
         }
+        // if we iterated too many times the algorithm couldn't reach the desired position, we terminate with an error
         if(niter >= max_iter){
-            success = false;    // per bellezza
+            success = false;
             break;
         }
 
+        // dq is the difference between the last guess (q0) and the new one (q1)
+        Eigen::VectorXd dq(model.nv);
+        dq = (jacobian + lambda*Eigen::MatrixXd::Identity(6, model.nv)).inverse()*e_bar_q0;
         Eigen::VectorXd q1(model.nv);
 
         while(true){
+            // compute new guess and the position of the ee with the new guess
             q1 = q0 + dq * alpha;
-
             pinocchio::SE3 pos_q1;
             pinocchio::computeAllTerms(model, data, q1, Eigen::VectorXd::Zero(model.nv));
             pos_q1 = pinocchio::updateFramePlacement(model, data, frame_id);
 
+            // compute error of the new guess
             Eigen::VectorXd e_bar_q1(model.nv);
-            e_bar_q1 << (target_position - pos_q1.translation()), (pos_q1.rotation()*pinocchio::log3(pos_q1.rotation().transpose()*target_orientation));
+            e_bar_q1 << target_position - pos_q1.translation(), errorInSO3(pos_q1.rotation(), target_orientation);
 
+            // if the new guess is worse than the previous one, we adjust alpha and try again
+            // otherwise the iteration is complete
             double improvement = e_bar_q0.norm() - e_bar_q1.norm();
-            float threshold = 0.0;  // even more strict: gamma*alpha*np.linalg.norm(e_bar)
-
-            if(improvement < threshold){
+            if(improvement < 0.0){
                 alpha *= beta;
             }
             else{
@@ -97,16 +121,15 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
         niter++;
     }
 
+    // prevent angles more than 2pi or less than -2pi
     for(int i=0; i<model.nv; i++){
-        while(q0[i] >= 2*3.1415927)
-            q0[i] -= 2*3.1415927;
-        while(q0[i] <= -2*3.1415927)
-            q0[i] += 2*3.1415927;
+        while(q0[i] >= 2*M_PI)
+            q0[i] -= 2*M_PI;
+        while(q0[i] <= -2*M_PI)
+            q0[i] += 2*M_PI;
     }
-
-    // ROS_INFO_STREAM("q: " << q0);
     
-    return std::make_pair(q0, success);
+    return std::make_pair(q0, success && !out_of_workspace);
 }
 
 
@@ -118,26 +141,6 @@ void myComputeAllTerms(pinocchio::Model model, pinocchio::Data data, Eigen::Vect
     pinocchio::nonLinearEffects(model, data, q, Eigen::VectorXd::Zero(model.nv));
     pinocchio::computeJointJacobiansTimeVariation(model, data, q, Eigen::VectorXd::Zero(model.nv));
     pinocchio::updateFramePlacements(model, data);
-}
-
-
-Eigen::Matrix3d euler_to_rotation_matrix(Eigen::Vector3d rpy){
-    Eigen::Matrix3d Rx, Ry, Rz;
-    double r=rpy[0], p=rpy[1], y=rpy[2];
-
-    Rx <<   1, 0,      0,
-            0, cos(r), -1*sin(r),
-            0, sin(r),  cos(r);
-            
-    Ry <<   cos(p),    0, sin(p),
-            0,         1, 0,
-            -1*sin(p), 0, cos(p);
-
-    Rz <<   cos(y), -1*sin(y), 0,
-            sin(y), cos(y),    0,
-            0,      0,         1;
-
-    return Rz*(Ry*Rx);
 }
 
 

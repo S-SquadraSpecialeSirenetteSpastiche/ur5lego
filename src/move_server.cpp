@@ -45,10 +45,8 @@ public:
 
         const std::string urdf_file = ros::package::getPath("ur5lego") + std::string("/robot_description/ur5.urdf");
         pinocchio::urdf::buildModel(urdf_file, model_);
-        // homing position
         q = Eigen::VectorXd(6);
-        q << -0.32, -0.78, -2.56, -1.63, -1.57, 3.49;
-        // send_joint_positions();
+        q << -0.32, -0.78, -2.56, -1.63, -1.57, 3.49;   // homing position
 
         action_server_.start();
     }
@@ -60,10 +58,15 @@ public:
     void executeCB(const ur5lego::MoveGoalConstPtr &goal){
         ROS_INFO_STREAM("target: " << coordsToStr(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y));
 
-        bool success = compute_and_send_trajectory_2(
-            model_, Eigen::Vector3d(goal->X, goal->Y, goal->Z), Eigen::Vector3d(goal->r, goal->p, goal->y), q, 2, publisher);
+        std::pair<Eigen::VectorXd, bool> res = inverse_kinematics_wrapper(
+            model_, Eigen::Vector3d(goal->X, goal->Y, goal->Z), Eigen::Vector3d(goal->r, goal->p, goal->y), q);
 
-        result_.success = success;
+        if(res.second){
+            computeAndSendTrajectory(q, res.first, 3.0, 1000, publisher);
+            q = res.first;
+        }
+
+        result_.success = res.second;
         action_server_.setSucceeded(result_);
     }
 };

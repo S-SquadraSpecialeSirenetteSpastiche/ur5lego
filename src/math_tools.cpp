@@ -60,3 +60,7 @@ Eigen::Matrix3d euler_to_rotation_matrix(Eigen::Vector3d rpy){
     return Rz*(Ry*Rx);
 }
 
+
+Eigen::Vector3d errorInSO3(Eigen::Matrix3d r1, Eigen::Matrix3d r2){
+    return r1*pinocchio::log3(r1.transpose()*r2);
+}
