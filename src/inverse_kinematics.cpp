@@ -1,4 +1,6 @@
 #include "include/inverse_kinematics.h"
+#include <chrono>
+#include <ros/ros.h>
 
 
 std::pair<Eigen::VectorXd, bool> inverse_kinematics_wrapper(
@@ -23,6 +25,7 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics_wrapper(
         step_size[i+3] = (target_orientation_rpy[i] - orientation_sofar[i])/(double)n_steps;
     }
 
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     for(int i=0; i<n_steps; i++){
         for(int j=0; j<3; j++){
             position_sofar[j] += step_size[j];
@@ -34,9 +37,8 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics_wrapper(
             return std::make_pair(q, false);    // il valore di q qui è irrilevante perchè l'algoritmo non ha avuto successo
         q = ikresult.first;
     }
-
-    pinocchio::computeAllTerms(model, data, q, Eigen::VectorXd::Zero(model.nv));
-    pinocchio::SE3 end_pos = pinocchio::updateFramePlacement(model, data, frame_id);
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    ROS_INFO_STREAM("Time for ik algorithm = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]");
 
     return std::make_pair(q, true);
 }
@@ -61,7 +63,7 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
     bool success = false;
 
 
-    while(true){ 
+    while(niter < max_iter){ 
         // compute position and orientation of the ee with the current guess
         pinocchio::computeAllTerms(model, data, q0, Eigen::VectorXd::Zero(model.nv));
         pinocchio::SE3 pos_q0 = pinocchio::updateFramePlacement(model, data, frame_id);
@@ -82,11 +84,6 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
             if(e_bar_q0.norm() > 0.1){
                 out_of_workspace = true;
             }
-            break;
-        }
-        // if we iterated too many times the algorithm couldn't reach the desired position, we terminate with an error
-        if(niter >= max_iter){
-            success = false;
             break;
         }
 
