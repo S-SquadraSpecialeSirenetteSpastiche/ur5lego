@@ -29,10 +29,10 @@ void computeAndSendTrajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float t, i
     Eigen::VectorXd c;    // coefficienti del polinomio
 
     // itero fino a che tutti i valori di q e qf sono distanti meno di eps
-    // la seconda espressione si occupa delle differenze negative
+    // la seconda espressione si occupa delle differenze negative (bastava riscrivere la prima scambiando qf e q ma dettagli)
     while((q-qf).maxCoeff() > eps || -1*(q-qf).minCoeff() > eps ){
         for(int i=0; i<6; i++){
-            c = fifthOrderPolynomialTrajectory(t, q[i], qf[i]);     // TODO: questi si possono calcolare una volta sola per ogni i, non serve ricalcolarli tutti ogni ripetizione del while
+            c = fifthOrderPolynomialTrajectory(t, q[i], qf[i]);
 
             q[i] = c[0] + c[1]*time + c[2]*pow(time,2) + c[3]*pow(time,3) + c[4]*pow(time,4) + c[5]*pow(time,5);
             v[i] = c[1] + 2*c[2]*time + 3*c[3]*pow(time,2) + 4*c[4]*pow(time,3) + 5*c[5]*pow(time,4);

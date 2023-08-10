@@ -3,7 +3,7 @@
     <arg name="robot_name" default="ur5" />
     
     <!-- send the robot XML to param server -->
-    <!-- TODO: gripper:=true (a dire il vero si muove anche cosi' ma dettagli)-->
+    <!-- TODO: gripper:=true -->
     <param name="robot_description" command="$(find xacro)/xacro '$(find ur5lego)/robot_description/ur5.urdf.xacro'
         joint_limit_params:=config/joint_limits.yaml
         kinematics_params:=config/default_kinematics.yaml
