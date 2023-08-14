@@ -14,7 +14,7 @@ rosrun gazebo_ros spawn_model -file /home/utente/my_ws/src/ur5lego/blocks_decscr
     </include>
 
     <!-- sends block XML to parameter server -->
-    <param name="block_description" command="$(find xacro)/xacro '$(find ur5lego)/blocks_description/cubo.urdf.xacro'"/>
+    <param name="block_description" command="$(find xacro)/xacro '$(find ur5lego)/blocks_description/X2-Y2_Z2.urdf.xacro'"/>
 
     <!-- spawn the model -->
     <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model"
