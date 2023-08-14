@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="block1">
+  <link name="block1">
+    <visual>
+      <geometry>
+        <mesh filename="/home/utente/my_ws/src/ur5lego/blocks_description/meshes/cubo.dae"/>
+      </geometry>
+      <material name="Red">
+        <color rgba="1.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <mesh filename="/home/utente/my_ws/src/ur5lego/blocks_description/meshes/cubo.dae"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="3.7"/>
+      <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+      <inertia ixx="0.010267495893" ixy="0.0" ixz="0.0" iyy="0.010267495893" iyz="0.0" izz="0.00666"/>
+    </inertial>
+  </link>
+</robot>

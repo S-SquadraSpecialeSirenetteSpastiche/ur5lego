@@ -2,8 +2,7 @@
 <launch>
     <arg name="robot_name" default="ur5" />
     
-    <!-- send the robot XML to param server -->
-    <!-- TODO: gripper:=true -->
+    <!-- send the robot XML to param server TODO: questo va in spawn_robot.launch -->
     <param name="robot_description" command="$(find xacro)/xacro '$(find ur5lego)/robot_description/ur5.urdf.xacro'
         joint_limit_params:=config/joint_limits.yaml
         kinematics_params:=config/default_kinematics.yaml
