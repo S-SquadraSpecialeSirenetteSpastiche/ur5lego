@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
-<xacro:arg name="block_name" default="block"/>
 
-<robot xmlns:xacro="http://wiki.ros.org/xacro" name="$(arg block_name)">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="$(arg block_name)">
+  <xacro:arg name="block_name" default="block"/>
+  
   <link name="block">
     <visual>
       <geometry>
-        <mesh filename="$(find ur5lego)/blocks_description/meshes/X1-Y2-Z2-TWINFILLE.dae"/>
+        <mesh filename="$(find ur5lego)/blocks_description/meshes/X1-Y2-Z2-TWINFILLET.dae"/>
       </geometry>
       <material name="Red">
         <color rgba="1.0 0.0 0.0 1.0"/>
@@ -13,7 +14,7 @@
     </visual>
     <collision>
       <geometry>
-        <mesh filename="$(find ur5lego)/blocks_description/meshes/X1-Y2-Z2-TWINFILLE.dae"/>
+        <mesh filename="$(find ur5lego)/blocks_description/meshes/X1-Y2-Z2-TWINFILLET.dae"/>
       </geometry>
     </collision>
     <inertial>
