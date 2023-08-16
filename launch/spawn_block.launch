@@ -1,22 +1,24 @@
-<!-- per spawnare un blocco a mano: 
+<!-- per spawnare un blocco a mano (da aggiornare): 
 rosrun gazebo_ros spawn_model -file /home/utente/my_ws/src/ur5lego/blocks_decscription/X2-Y2_Z2.urdf -urdf -model block -->
 
 <launch>
     <arg name="block_name" default="block" />
+    <arg name="block_type" default="X2-Y2_Z2" />
     <arg name="spawn_x" default="0.5" />
 	<arg name="spawn_y" default="0.35" />
 	<arg name="spawn_z" default="1" />
 
-    <!-- launch gzserver -->
+    <!-- sends block XML to parameter server -->
+    <param name="block_description" command="$(find xacro)/xacro '$(find ur5lego)/blocks_description/$(arg block_type).urdf.xacro'"/>
+
     <include file="$(find gazebo_ros)/launch/empty_world.launch" >
 		<arg name="world_name" value="$(find ur5lego)/worlds/tavolo.world"/>
-        <arg name="paused" default="true" />
+        <arg name="paused" default="false" />
     </include>
 
-    <!-- sends block XML to parameter server -->
-    <param name="block_description" command="$(find xacro)/xacro '$(find ur5lego)/blocks_description/X2-Y2_Z2.urdf.xacro'"/>
-
     <!-- spawn the model -->
+    <!--
     <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model"
-        args="-urdf -param block_description -model block1 -robot_namespace /$(arg block_name) -x $(arg spawn_x) -y $(arg spawn_y) -z $(arg spawn_z)"/>
+        args="-urdf -param block_description -model haha -block_name $(arg block_name) -x $(arg spawn_x) -y $(arg spawn_y) -z $(arg spawn_z)"/>
+        -->
 </launch>
