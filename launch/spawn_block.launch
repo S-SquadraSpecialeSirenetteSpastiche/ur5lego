@@ -17,8 +17,6 @@ rosrun gazebo_ros spawn_model -file /home/utente/my_ws/src/ur5lego/blocks_decscr
     </include>
 
     <!-- spawn the model -->
-    <!--
     <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model"
-        args="-urdf -param block_description -model haha -block_name $(arg block_name) -x $(arg spawn_x) -y $(arg spawn_y) -z $(arg spawn_z)"/>
-        -->
+        args="-urdf -param block_description -model haha -robot_namespace $(arg block_name) -x $(arg spawn_x) -y $(arg spawn_y) -z $(arg spawn_z)"/>
 </launch>

@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
-<xacro:arg name="block_name" default="block"/>
 
-<robot xmlns:xacro="http://wiki.ros.org/xacro" name="$(arg block_name)">
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="$(arg robot_namespace)">
   <link name="block">
     <visual>
       <geometry>
