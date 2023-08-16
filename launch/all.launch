@@ -1,6 +1,20 @@
 <launch>
+    <arg name="robot_name" default="ur5" />
+
     <node name="rqt_console" pkg="rqt_console" type="rqt_console"/>
     <include file="$(find ur5lego)/launch/start_gazebo.launch"></include>
     <include file="$(find ur5lego)/launch/move_server.launch"></include>
     <include file="$(find ur5lego)/launch/move_client.launch"></include>
+
+    <include file="$(find ur5lego)/launch/spawn_robot.launch">
+        <arg name="robot_name" value="$(arg robot_name)" />
+    </include>
+
+    <!-- FIXME: così se ne può spawnare solo uno, se ne spawni di più sono tutti dell'ultimo tipo -->
+    <include file="$(find ur5lego)/launch/spawn_block.launch">
+        <arg name="block_type" value="X1-Y4-Z2" />
+        <arg name="block_name" value="block1" />
+        <arg name="spawn_x" value="0.2" />
+        <arg name="spawn_y" value="0.7" />
+    </include>
 </launch>

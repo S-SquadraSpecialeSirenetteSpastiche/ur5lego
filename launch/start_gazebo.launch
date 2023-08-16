@@ -1,7 +1,5 @@
 <?xml version="1.0" ?>
-<launch>
-    <arg name="robot_name" default="ur5" />
-    
+<launch>    
     <!-- send the robot XML to param server TODO: questo va in spawn_robot.launch -->
     <param name="robot_description" command="$(find xacro)/xacro '$(find ur5lego)/robot_description/ur5.urdf.xacro'
         joint_limit_params:=config/joint_limits.yaml
@@ -20,10 +18,5 @@
     <include file="$(find gazebo_ros)/launch/empty_world.launch" >
 		<arg name="world_name" value="$(find ur5lego)/worlds/tavolo.world"/>
         <arg name="paused" default="false" />
-    </include>
-    
-    <!-- spawn the robot described in robot_description into Gazebo -->
-    <include file="$(find ur5lego)/launch/spawn_robot.launch">
-        <arg name="robot_name" value="$(arg robot_name)" />
     </include>
 </launch>

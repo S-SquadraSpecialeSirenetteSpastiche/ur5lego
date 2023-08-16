@@ -12,6 +12,8 @@
         command="$(find xacro)/xacro '$(find ur5lego)/blocks_description/$(arg block_type).urdf.xacro' block_name:=$(arg block_name)"/>
 
     <!-- spawn the model -->
-    <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model"
+    <!-- the node that spawns the model has the name of the model as part of its name
+        to avoid having multiple nodes with the same name, which ros doesn't allow-->
+    <node name="spawn_gazebo_model_$(arg block_name)" pkg="gazebo_ros" type="spawn_model"
         args="-urdf -param block_description -model $(arg block_name) -x $(arg spawn_x) -y $(arg spawn_y) -z $(arg spawn_z)"/>
 </launch>
