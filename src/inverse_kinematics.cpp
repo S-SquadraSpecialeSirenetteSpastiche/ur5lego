@@ -38,7 +38,7 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics_wrapper(
         q = ikresult.first;
     }
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    ROS_INFO_STREAM("Time for ik algorithm = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]");
+    // ROS_INFO_STREAM("Time for ik algorithm = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]");
 
     return std::make_pair(q, true);
 }

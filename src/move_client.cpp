@@ -24,10 +24,8 @@ int main (int argc, char **argv)
     std::ifstream file(ros::package::getPath("ur5lego") + std::string("/src/dest.txt"));
     int n;
     file >> n;
-    ROS_INFO_STREAM(n);
 
     ur5lego::MoveGoal *goals = new ur5lego::MoveGoal[n];
-
 
     for(int i=0; i<n; i++){
         // su Gazebo asse rosso x, verde y, blu z
