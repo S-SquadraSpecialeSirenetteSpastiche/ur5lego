@@ -6,7 +6,7 @@
 #include "geometry_msgs/Pose.h"
 #include "ur5lego/Pose.h"
 #include "queue"
-#include "move_manager.h"
+#include "include/move_manager.h"
 
 using namespace ros;
 using namespace std;

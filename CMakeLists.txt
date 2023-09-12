@@ -21,7 +21,11 @@ catkin_package(
     CATKIN_DEPENDS actionlib_msgs roslib
 )
 
-include_directories(${catkin_INCLUDE_DIRS})
+include_directories(
+    ${catkin_INCLUDE_DIRS}
+    src
+    msg
+)
 
 
 add_library(math src/math_tools.cpp)
@@ -34,9 +38,13 @@ add_executable(ur5lego_move_server src/move_server.cpp)
 target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES} pinocchio::pinocchio inverse_kinematics math trajectory)
 # add_dependencies(ur5lego_move_server ${ur5lego_EXPORTED_TARGETS})
 
-add_executable(ur5lego_move_client src/move_client.cpp)
-target_link_libraries(ur5lego_move_client ${catkin_LIBRARIES})
+# add_executable(ur5lego_move_client src/move_client.cpp)
+# target_link_libraries(ur5lego_move_client ${catkin_LIBRARIES})
 # add_dependencies(ur5lego_move_client ${ur5lego_EXPORTED_TARGETS})
+
+add_executable(ur5lego_move_subscriber src/controller_move_subscriber.cpp)
+target_link_libraries(ur5lego_move_subscriber ${catkin_LIBRARIES})
+add_dependencies(ur5lego_move_subscriber ${ur5lego_EXPORTED_TARGETS})
 
 
 install(PROGRAMS scripts/send_homing_angles.bash DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
