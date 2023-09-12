@@ -6,19 +6,41 @@ set(pinocchio_DIR "/opt/openrobots/lib/cmake/pinocchio/")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include/eigen3 -w")
 
 
-find_package(catkin REQUIRED COMPONENTS roscpp rospy roslib pinocchio actionlib_msgs actionlib)
+find_package(
+    catkin REQUIRED COMPONENTS 
+    roscpp 
+    rospy 
+    roslib 
+    pinocchio 
+    actionlib_msgs 
+    actionlib
+    geometry_msgs
+    message_generation
+)
 
 add_action_files(
     DIRECTORY action
     FILES Move.action
 )
 
+add_message_files(
+    FILES
+    Pose.msg
+)
+
 generate_messages(
-    DEPENDENCIES actionlib_msgs std_msgs  # Or other packages containing msgs
+    DEPENDENCIES 
+    actionlib_msgs 
+    std_msgs  
+    geometry_msgs
+    # Or other packages containing msgs
 )
 
 catkin_package(
-    CATKIN_DEPENDS actionlib_msgs roslib
+    CATKIN_DEPENDS 
+    actionlib_msgs 
+    roslib
+    message_runtime
 )
 
 include_directories(
@@ -31,6 +53,7 @@ include_directories(
 add_library(math src/math_tools.cpp)
 add_library(inverse_kinematics src/inverse_kinematics.cpp)
 add_library(trajectory src/trajectory_planner.cpp)
+add_library(ur5lego_move_manager STATIC src/moveManager.cpp)
 
 target_link_libraries(trajectory ${catkin_LIBRARIES} math inverse_kinematics)
 
@@ -43,7 +66,7 @@ target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES} pinocchio::pinocch
 # add_dependencies(ur5lego_move_client ${ur5lego_EXPORTED_TARGETS})
 
 add_executable(ur5lego_move_subscriber src/controller_move_subscriber.cpp)
-target_link_libraries(ur5lego_move_subscriber ${catkin_LIBRARIES})
+target_link_libraries(ur5lego_move_subscriber ur5lego_move_manager ${catkin_LIBRARIES})
 add_dependencies(ur5lego_move_subscriber ${ur5lego_EXPORTED_TARGETS})
 
 
