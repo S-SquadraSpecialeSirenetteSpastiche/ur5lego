@@ -69,5 +69,9 @@ add_executable(ur5lego_move_subscriber src/controller_move_subscriber.cpp)
 target_link_libraries(ur5lego_move_subscriber ur5lego_move_manager ${catkin_LIBRARIES})
 add_dependencies(ur5lego_move_subscriber ${ur5lego_EXPORTED_TARGETS})
 
+add_executable(ur5lego_move_publisher src/controller_move_publisher.cpp)
+target_link_libraries(ur5lego_move_publisher ${catkin_LIBRARIES})
+add_dependencies(ur5lego_move_publisher ${ur5lego_EXPORTED_TARGETS})
+
 
 install(PROGRAMS scripts/send_homing_angles.bash DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

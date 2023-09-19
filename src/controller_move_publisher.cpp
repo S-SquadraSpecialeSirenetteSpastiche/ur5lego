@@ -28,12 +28,12 @@ int main(int argc, char **argv){
   {
 
     ur5lego::Pose msg;
-    msg.position.x = (_Float32)(rand()%10);
-    msg.position.y = (_Float32)(rand()%10);
-    msg.position.z = (_Float32)(rand()%10);
-    msg.orientation.x = (_Float64)(rand()%10);
-    msg.orientation.y = (_Float64)(rand()%10);
-    msg.orientation.z = (_Float64)(rand()%10);
+    msg.position.x = (_Float32)(rand()%10)/20;
+    msg.position.y = (_Float32)(rand()%10)/20;
+    msg.position.z = (_Float32)(0,5);
+    msg.orientation.x = (_Float64)(1.5707);
+    msg.orientation.y = (_Float64)(1.5707);
+    msg.orientation.z = (_Float64)(0);
 
     ROS_INFO("X:%f, Y:%f, Z:%f", msg.position.x, msg.position.y, msg.position.z);
 

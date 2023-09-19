@@ -1,0 +1,3 @@
+<launch>
+    <node name="move_subscriber" pkg="ur5lego" type="ur5lego_move_subscriber"/>
+</launch>
