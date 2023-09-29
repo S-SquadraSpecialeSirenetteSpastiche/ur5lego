@@ -21,7 +21,7 @@ int main(int argc, char **argv){
 
   Publisher chatter_pub = nh.advertise<ur5lego::Pose>("lego_position", 1000);
 
-  Rate loop_rate(1);
+  Rate loop_rate(90);
 
   int count = 0;
   while (ok())

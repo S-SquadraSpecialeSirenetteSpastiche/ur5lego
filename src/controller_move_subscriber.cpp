@@ -21,6 +21,9 @@ int main(int argc, char **argv){
 
     Subscriber test_position = nh.subscribe("lego_position", 1000, positionCallback);
 
+    ROS_INFO_STREAM("weeee");
+
+
     while(ok()){
     mg.actionPlanner(pos_msgs);
 
