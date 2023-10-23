@@ -12,14 +12,6 @@
 #include <iostream>
 
 
-std::string coordsToStr(float a, float b, float c, float d, float e, float f){
-    std::string s;
-    s = "(" + std::to_string(a) + "," + std::to_string(b) + "," + std::to_string(c) + "), (" + 
-        std::to_string(d) + "," + std::to_string(e) + "," + std::to_string(f) + ")";
-    return s;
-}
-
-
 class MoveAction
 {
 protected:
@@ -35,7 +27,7 @@ protected:
     ur5lego::MoveFeedback feedback_;
     ur5lego::MoveResult result_;
     
-    pinocchio::Model model_;
+    pinocchio::Model model_;    // the model of the robot
     Eigen::VectorXd q;  // current configuration
 
 public:
@@ -56,7 +48,8 @@ public:
     }
 
     void executeCB(const ur5lego::MoveGoalConstPtr &goal){
-        ROS_INFO_STREAM("target: " << coordsToStr(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y));
+        // round the numbers published to the 2nd decimal place
+        ROS_INFO_STREAM("Received goal: " << coordsToStr(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y));
 
         std::pair<Eigen::VectorXd, bool> res = inverse_kinematics_wrapper(
             model_, Eigen::Vector3d(goal->X, goal->Y, goal->Z), Eigen::Vector3d(goal->r, goal->p, goal->y), q);
@@ -68,6 +61,14 @@ public:
 
         result_.success = res.second;
         action_server_.setSucceeded(result_);
+    }
+
+private: 
+    std::string coordsToStr(float X, float Y, float Z, float r, float p, float y){
+        std::stringstream ss;
+        ss << std::fixed << std::setprecision(2);
+        ss << "(" <<  X << ", " << Y << ", " << Z << ") (" << r << ", " << p << ", " << y << ")";
+        return ss.str();
     }
 };
 
