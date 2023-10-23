@@ -3,6 +3,12 @@
 #include <ros/ros.h>
 
 
+/// @brief computes the inverse kinematics of a 6DOF robot
+/// @param model                the robot model
+/// @param target_position      the desired position of the end effector
+/// @param target_orientation_rpy   the desired orientation of the end effector, in roll pitch yaw representation
+/// @param q0                   the initial guess for the inverse kinematics
+/// @return a pair containing the solution of the inverse kinematics and a boolean value indicating if the algorithm was successful
 std::pair<Eigen::VectorXd, bool> inverse_kinematics_wrapper(
     pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Eigen::VectorXd q0){
     
@@ -25,7 +31,7 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics_wrapper(
         step_size[i+3] = (target_orientation_rpy[i] - orientation_sofar[i])/(double)n_steps;
     }
 
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     for(int i=0; i<n_steps; i++){
         for(int j=0; j<3; j++){
             position_sofar[j] += step_size[j];
@@ -37,13 +43,18 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics_wrapper(
             return std::make_pair(q, false);    // il valore di q qui è irrilevante perchè l'algoritmo non ha avuto successo
         q = ikresult.first;
     }
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     // ROS_INFO_STREAM("Time for ik algorithm = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]");
 
     return std::make_pair(q, true);
 }
 
-
+/// @brief computes the inverse kinematics of a 6DOF robot, this function only works for small movements and therefore should not be called directly
+/// @param model                the robot model
+/// @param target_position      the desired position of the end effector
+/// @param target_orientation_rpy   the desired orientation of the end effector, in roll pitch yaw representation
+/// @param q0                   the initial guess for the inverse kinematics
+/// @return a pair containing the solution of the inverse kinematics and a boolean value indicating if the algorithm was successful
 std::pair<Eigen::VectorXd, bool> inverse_kinematics(
     pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Eigen::VectorXd q0){
 
