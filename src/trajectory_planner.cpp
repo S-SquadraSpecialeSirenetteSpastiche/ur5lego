@@ -22,10 +22,8 @@ void computeAndSendTrajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float t, i
     double eps = 1e-6;
     float dt = t/steps;
     float time = 0;
-    // ros::Rate send_position_rate(dt);    // TODO: capire perchè questa non va
 
     Eigen::VectorXd q = qi; // position sent so far
-    // Eigen::VectorXd v(6), a(6);
     Eigen::VectorXd c;    // polynomial coefficients
 
     // iterate until all values of |q-qf| are less than eps
@@ -35,8 +33,6 @@ void computeAndSendTrajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float t, i
             c = thirdOrderPolynomialTrajectory(t, q[i], qf[i]);
 
             q[i] = c[0] + c[1]*time + c[2]*pow(time,2) + c[3]*pow(time,3);
-            // v[i] = c[1] + 2*c[2]*time + 3*c[3]*pow(time,2);
-            // a[i] = 2*c[2] + 6*c[3]*time;
         }
 
         send_joint_positions(publisher, q);
