@@ -15,7 +15,7 @@ void positionCallback(const ur5lego::Pose::ConstPtr & msg){
 
 int main(int argc, char **argv){
 
-    init(argc, argv, "test_move_sub");
+    init(argc, argv, "listener");
     MoveManager mg;
     NodeHandle nh;
 

@@ -14,7 +14,7 @@ class MoveManager {
     ros::Subscriber test_position;
    
     int height;
-    const int d = 20;
+    const int d = 0.1;
     ur5lego::Pose fixed_pos;
     
     MoveManager();

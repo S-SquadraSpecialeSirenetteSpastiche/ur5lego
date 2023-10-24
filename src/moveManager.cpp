@@ -12,13 +12,13 @@ using namespace ros;
 using namespace std;
 
 MoveManager::MoveManager(){
-    ac = new  actionlib::SimpleActionClient<ur5lego::MoveAction>("test_action", true);
+    ac = new  actionlib::SimpleActionClient<ur5lego::MoveAction>("move_server", true);
     ROS_INFO("Waiting for action server to start.");
     ac->waitForServer();
     ROS_INFO("Action server started.");
 
     //NodeHandle nh;
-    height = 50; //da sistemare;
+    height = 1; //da sistemare;
     fixed_pos.position.x = 0.3; //da sistemare
     fixed_pos.position.y = height; //da sistemare
     fixed_pos.position.z = 0.3; //da sistemare
@@ -37,7 +37,7 @@ void MoveManager::goalSetter(_Float32 X, _Float32 Y, _Float32 Z, _Float32 r, _Fl
     goal.r = r;
     goal.p = p;
     goal.y = y;
-    ROS_INFO_STREAM("X  nellla  funzione: "<<goal.X);
+    ROS_INFO_STREAM("Y  nellla  funzione: "<<goal.Y);
 
     ROS_INFO_STREAM("Goal setted, ready to be sent\n");
 }
@@ -51,7 +51,7 @@ void MoveManager::goalSetter(ur5lego::Pose msg, ur5lego::MoveGoal & goal){
     goal.r = msg.orientation.x;
     goal.p = msg.orientation.y;
     goal.y = msg.orientation.z;
-    ROS_INFO_STREAM("X  nellla  funzione: "<<goal.X);
+    ROS_INFO_STREAM("Y  nellla  funzione: "<<goal.Y);
 
     ROS_INFO_STREAM("Goal setted, ready to be sent\n");
 }
@@ -69,7 +69,7 @@ void MoveManager::goalSender(ur5lego::MoveGoal & goal){
     else
     {
         ROS_INFO("Action did not finish before the time out.");
-        exit(1);
+        //exit(1);
     }
 }
 
@@ -94,9 +94,9 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         ROS_INFO("dati ricevuti: X:%f ,Y:%f , Z:%f",X, Y, Z );
         
         //move above the object
-        goalSetter(X,Y-d,Z,r,p,y, goal);
+        goalSetter(X,Y,Z-d,r,p,y, goal);
         goalSender(goal);
-        
+        /*
         //descend and grab the object
         goalSetter(X,Y,Z,r,p,y, goal);
         goalSender(goal);
@@ -116,7 +116,7 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         goalSender(goal);
         fixed_pos.position.y = fixed_pos.position.y-0.1;
         //grab(false)
-
+        */
         pos_msgs.pop();
     }
 }  
