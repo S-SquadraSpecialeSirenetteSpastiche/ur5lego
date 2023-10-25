@@ -1,0 +1,3 @@
+<launch>
+    <node name="homing_position_sender" pkg="ur5lego" type="ur5lego_send_homing_position"/>
+</launch>
