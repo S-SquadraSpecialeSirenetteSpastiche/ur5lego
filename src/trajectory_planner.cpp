@@ -10,6 +10,7 @@ void send_joint_positions(ros::Publisher publisher, Eigen::VectorXd q){
     for(int i=0; i<6; i++)
         command.data[i] = (float)q[i];
     publisher.publish(command);
+    ros::spinOnce();    // spin once to make sure the callback is processed
 }
 
 
@@ -18,27 +19,25 @@ void send_joint_positions(ros::Publisher publisher, Eigen::VectorXd q){
 /// @param qf       the target joint positions
 /// @param t        the time to go from the starting position to the target
 /// @param steps    the number of commands to send
-void computeAndSendTrajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float t, int steps, ros::Publisher publisher){
-    double eps = 1e-6;
-    float dt = t/steps;
+void computeAndSendTrajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float tf, int steps, ros::Publisher publisher){
+    float dt = tf/steps;
     float time = 0;
 
     Eigen::VectorXd q = qi; // position sent so far
     Eigen::VectorXd c;    // polynomial coefficients
 
-    // iterate until all values of |q-qf| are less than eps
-    // the second expression takes care of the negative differences)
-    while((q-qf).maxCoeff() > eps || -1*(q-qf).minCoeff() > eps ){
-        for(int i=0; i<6; i++){
-            c = thirdOrderPolynomialTrajectory(t, q[i], qf[i]);
-
-            q[i] = c[0] + c[1]*time + c[2]*pow(time,2) + c[3]*pow(time,3);
+    Eigen::VectorXd q_diff = (q-qf).cwiseAbs();
+    while(time < tf){
+        for(int jointi=0; jointi<6; jointi++){
+            c = thirdOrderPolynomialTrajectory(tf, qi[jointi], qf[jointi]);
+            q[jointi] = c[0] + c[1]*time + c[2]*pow(time,2) + c[3]*pow(time,3);
         }
 
         send_joint_positions(publisher, q);
         
         time += dt;
-        // send_position_rate.sleep();
+        q_diff = (q-qf).cwiseAbs();
+
         ros::Duration(dt).sleep();
     }
 }
