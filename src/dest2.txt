@@ -1,11 +1,9 @@
-6
-0.45 0.43 0.50 1.5707 0 0.3
-0.45 0.43 0.60 1.5707 0 0.3
-0.45 0.43 0.50 1.5707 0 0.3
--0.35 0.3 0.25 1.5707 0 0
--0.35 0.3 0.35 1.5707 0 0
--0.35 0.3 0.25 1.5707 0 0
-
-polso girato verso il basso e si muove principalmente lungo l'asse x
-il movimento è simile a quello che dovrà fare veramente
-gli angoli funzionano sono riferiti al frame usato dall'algoritmo di cinematica di esempio di pinocchio (inverse_kinematics_bad)
+8
+0.45 0.43 0.50 1.5707 -1.5707 0 1.0
+0.45 -0.05 0.30 1.5707 -1.5707 0 0.5
+0.45 0.43 0.50 1.5707 -1.5707 0 1.0
+0.45 0.43 0.50 1.5707 -1.0707 0 3.0
+0.45 0.43 0.50 1.5707 -1.5707 0 1.0
+-0.45 -0.05 0.30 1.5707 -1.5707 0 3.0
+-0.45 0.43 0.50 1.5707 -1.5707 0 1.0
+-0.45 -0.05 0.30 1.5707 -1.5707 0 3.0

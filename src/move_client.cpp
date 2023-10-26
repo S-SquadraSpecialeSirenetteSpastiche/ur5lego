@@ -29,7 +29,7 @@ int main (int argc, char **argv)
 
     for(int i=0; i<n; i++){
         // su Gazebo asse rosso x, verde y, blu z
-        float X, Y, Z, r, p, y;
+        float X, Y, Z, r, p, y, time;
         // se li metto uno dopo l'altro non funziona
         file >> X;
         file >> Y;
@@ -37,12 +37,14 @@ int main (int argc, char **argv)
         file >> r;
         file >> p;
         file >> y;
+        file >> time;
         goals[i].X = (_Float32)X;
         goals[i].Y = (_Float32)Y;
         goals[i].Z = (_Float32)Z;
         goals[i].r = (_Float32)r;
         goals[i].p = (_Float32)p;
         goals[i].y = (_Float32)y;
+        goals[i].time = (_Float32)time;
     }
     file.close();
 

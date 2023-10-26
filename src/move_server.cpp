@@ -55,13 +55,13 @@ public:
     /// @brief callback for the action server
     /// @param goal the goal sent by the client
     void executeCB(const ur5lego::MoveGoalConstPtr &goal){
-        ROS_INFO_STREAM("Received goal: " << coordsToStr(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y));
+        ROS_INFO_STREAM("Received goal: " << coordsToStr(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y) << " to do in " << goal->time << "s");
 
         std::pair<Eigen::VectorXd, bool> res = inverse_kinematics_wrapper(
             model_, Eigen::Vector3d(goal->X, goal->Y, goal->Z), Eigen::Vector3d(goal->r, goal->p, goal->y), q);
 
         if(res.second){
-            computeAndSendTrajectory(q, res.first, 3.0, 1000, publisher);
+            computeAndSendTrajectory(q, res.first, goal->time, 200, publisher);
             q = res.first;
         } else {
             ROS_ERROR("Inverse kinematics failed");
