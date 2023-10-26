@@ -26,6 +26,8 @@ void computeAndSendTrajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float tf, 
     Eigen::VectorXd q = qi; // position sent so far
     Eigen::VectorXd c;    // polynomial coefficients
 
+    ros::Rate rate = ros::Rate(steps/tf);
+
     Eigen::VectorXd q_diff = (q-qf).cwiseAbs();
     while(time < tf){
         for(int jointi=0; jointi<6; jointi++){
@@ -38,7 +40,8 @@ void computeAndSendTrajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float tf, 
         time += dt;
         q_diff = (q-qf).cwiseAbs();
 
-        ros::Duration(dt).sleep();
+        rate.sleep();
+        // ros::Duration(dt).sleep();
     }
 }
 
