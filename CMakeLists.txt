@@ -6,7 +6,7 @@ set(pinocchio_DIR "/opt/openrobots/lib/cmake/pinocchio/")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include/eigen3 -w")
 
 
-find_package(catkin REQUIRED COMPONENTS roscpp rospy roslib pinocchio actionlib_msgs actionlib)
+find_package(catkin REQUIRED COMPONENTS roscpp rospy roslib pinocchio actionlib_msgs actionlib sensor_msgs cv_bridge)
 
 add_action_files(
     DIRECTORY action
@@ -14,7 +14,7 @@ add_action_files(
 )
 
 generate_messages(
-    DEPENDENCIES actionlib_msgs std_msgs  # Or other packages containing msgs
+    DEPENDENCIES actionlib_msgs std_msgs sensor_msgs  # Or other packages containing msgs
 )
 
 catkin_package(
@@ -22,7 +22,6 @@ catkin_package(
 )
 
 include_directories(${catkin_INCLUDE_DIRS})
-
 
 add_library(math src/math_tools.cpp)
 add_library(inverse_kinematics src/inverse_kinematics.cpp)
@@ -38,5 +37,12 @@ add_executable(ur5lego_move_client src/move_client.cpp)
 target_link_libraries(ur5lego_move_client ${catkin_LIBRARIES})
 # add_dependencies(ur5lego_move_client ${ur5lego_EXPORTED_TARGETS})
 
+# add_executable(ur5lego_image_converter src/image_converter.py)
+# target_link_libraries(ur5lego_image_converter ${catkin_LIBRARIES})
+# add_dependencies(ur5lego_image_converter ${ur5lego_EXPORTED_TARGETS})
 
 install(PROGRAMS scripts/send_homing_angles.bash DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+
+catkin_install_python(PROGRAMS src/image_converter.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
