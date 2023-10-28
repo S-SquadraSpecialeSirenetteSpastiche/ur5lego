@@ -41,5 +41,8 @@ target_link_libraries(ur5lego_move_client ${catkin_LIBRARIES})
 add_executable(ur5lego_send_homing_position src/send_homing_position.cpp)
 target_link_libraries(ur5lego_send_homing_position ${catkin_LIBRARIES} trajectory)
 
+add_executable(ur5lego_move_server_wrapper src/move_server_wrapper.cpp)
+target_link_libraries(ur5lego_move_server_wrapper ${catkin_LIBRARIES})
+
 
 # install(PROGRAMS scripts/send_homing_angles.bash DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
