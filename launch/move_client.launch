@@ -1,3 +1,0 @@
-<launch>
-    <node name="move_client" pkg="ur5lego" type="ur5lego_move_client"/>
-</launch>
