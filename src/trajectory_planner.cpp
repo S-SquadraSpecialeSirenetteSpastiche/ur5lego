@@ -41,7 +41,6 @@ void computeAndSendTrajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float tf, 
         q_diff = (q-qf).cwiseAbs();
 
         rate.sleep();
-        // ros::Duration(dt).sleep();
     }
 }
 
