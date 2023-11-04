@@ -21,6 +21,11 @@ link_directories(${GAZEBO_LIBRARY_DIRS})
 #list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}") #questo rompe tutto ancora di più
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 
+add_message_files(
+    FILES
+    ConnectLinks.msg
+)
+
 add_action_files(
     DIRECTORY action
     FILES Move.action
