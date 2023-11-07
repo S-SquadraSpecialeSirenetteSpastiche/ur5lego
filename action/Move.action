@@ -1,18 +1,13 @@
-#goal definition
+# goal definition
 float32 X
 float32 Y
 float32 Z
 float32 r
 float32 p
 float32 y
+float32 time
 ---
-#result definition
+# result definition
 bool success
 ---
-#feedback
-float32 Xsofar
-float32 Ysofar
-float32 Zsofar
-float32 rsofar
-float32 psofar
-float32 ysofar
+# feedback (no feedback is provided)

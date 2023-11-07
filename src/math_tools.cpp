@@ -34,7 +34,41 @@ Eigen::VectorXd fifthOrderPolynomialTrajectory(float tf, double start_q, double 
 /// @param end_q    final position
 /// @return a vector containing the 6 coefficients of the polynomial that describes the joint's position
 Eigen::VectorXd fifthOrderPolynomialTrajectory(float tf, double start_q, double end_q){
-    return fifthOrderPolynomialTrajectory(tf, start_q, 0, 0, end_q, 0,0);
+    return fifthOrderPolynomialTrajectory(tf, start_q, 0, 0, end_q, 0, 0);
+}
+
+
+/// @brief computes the coefficients of a third order polynomial, to move a joint from a position to another
+/// @param tf       time to move the joint (s)
+/// @param start_q  starting position
+/// @param start_v  starting velocity
+/// @param end_q    final position
+/// @param end_v    final velocity
+/// @return a vector containing the 4 coefficients of the polynomial that describes the joint's position
+Eigen::VectorXd thirdOrderPolynomialTrajectory(float tf, double start_q, double start_v, double end_q, double end_v){
+    Eigen::MatrixXd poly_matrix(4, 4);
+    poly_matrix <<  1,    0,    0,          0,
+                    0,    1,    0,          0,
+                    1,    tf,   pow(tf,2),  pow(tf, 3),
+                    0,    1,    2*tf,       3*pow(tf,2);
+
+    Eigen::VectorXd poly_vector = Eigen::VectorXd(4);
+    poly_vector << start_q, start_v, end_q, end_v;
+
+    Eigen::VectorXd coefficients = poly_matrix.inverse()*poly_vector;
+
+    return coefficients;
+}
+
+
+/// @brief computes the coefficients of a third order polynomial, to move a joint from a position to another, 
+/// assuming starting and final velocity equal to 0
+/// @param tf       time to move the joint (s)
+/// @param start_q  starting position
+/// @param end_q    final position
+/// @return a vector containing the 4 coefficients of the polynomial that describes the joint's position
+Eigen::VectorXd thirdOrderPolynomialTrajectory(float tf, double start_q, double end_q){
+    return thirdOrderPolynomialTrajectory(tf, start_q, 0, end_q, 0);
 }
 
 
