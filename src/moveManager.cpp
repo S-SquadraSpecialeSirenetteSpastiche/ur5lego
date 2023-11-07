@@ -44,6 +44,7 @@ void MoveManager::goalSetter(_Float32 X, _Float32 Y, _Float32 Z, _Float64 r, _Fl
     goal.r = r;
     goal.p = p;
     goal.y = y;
+    goal.time = 3.0;
     ROS_INFO("Action:   Coordinates: %f, %f, %f", goal.X, goal.Y, goal.Z);
 
     ROS_INFO_STREAM("Goal setted, ready to be sent\n");
@@ -58,6 +59,7 @@ void MoveManager::goalSetter(ur5lego::Pose msg, ur5lego::MoveGoal & goal){
     goal.r = msg.orientation.x;
     goal.p = msg.orientation.y;
     goal.y = msg.orientation.z;
+    goal.time = 3.0;
     ROS_INFO_STREAM("Y  nellla  funzione: "<<goal.Y);
 
     ROS_INFO_STREAM("Goal setted, ready to be sent\n");
