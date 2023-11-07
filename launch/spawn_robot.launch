@@ -16,6 +16,6 @@
     <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model"
         args="-urdf -param robot_description -model ur5 -robot_namespace /$(arg robot_name) -x $(arg spawn_x) -y $(arg spawn_y) -z $(arg spawn_z)"/>
 
-    <!-- send homing position to the new robot (FIXME: removed because it makes the robot crash on the table)-->
-    <!-- <node name="homing_angles_sender" pkg="ur5lego" type="send_homing_angles.bash" output="screen" /> -->
+    <!-- send the homing position -->
+    <node name="send_homing_position" pkg="ur5lego" type="ur5lego_send_homing_position"/>
 </launch>

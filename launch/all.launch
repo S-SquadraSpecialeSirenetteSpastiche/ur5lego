@@ -1,11 +1,17 @@
 <launch>
     <arg name="robot_name" default="ur5" />
 
+    <!-- start console -->
     <node name="rqt_console" pkg="rqt_console" type="rqt_console"/>
+
+    <!-- start gazebo -->
     <include file="$(find ur5lego)/launch/start_gazebo.launch"></include>
-    <include file="$(find ur5lego)/launch/move_server.launch"></include>
-    <include file="$(find ur5lego)/launch/move_client.launch"></include>
+    
     <include file="$(find ur5lego)/launch/image_converter.launch"></include>
+
+    <!-- start the move server and its wrapper-->
+    <node name="move_server" pkg="ur5lego" type="ur5lego_move_server"/>
+    <node name="move_server_wrapper" pkg="ur5lego" type="ur5lego_move_server_wrapper"/>
 
     <include file="$(find ur5lego)/launch/spawn_robot.launch">
         <arg name="robot_name" value="$(arg robot_name)" />
