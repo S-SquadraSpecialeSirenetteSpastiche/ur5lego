@@ -49,17 +49,29 @@ safety_k_position="$(arg safety_k_position)"/>
 </joint>
 
 <xacro:if value="$(arg vision_sensor)">
-	<xacro:include filename="sensors/d435_camera.urdf.xacro"/>
+	
+	<xacro:if value="$(arg gazebo)">
+		<xacro:include filename="sensors/zed2/simulation/zed2.xacro"/>
+		<xacro:zed2
+			parent="base_link"
+			name="zed_camera1">
+			<origin xyz="-0.9 0.18 -0.35" rpy="0. 0.523 0."/>
+		</xacro:zed2>
+		<xacro:zed2_gazebo/>
+  	</xacro:if>
+
+	<!-- <xacro:include filename="sensors/d435_camera.urdf.xacro"/>-->
 
 	  <!-- realsense -->
 	  <!--These values are taken from  d435_camera.urdf.xacro and  d435_camera_openni.gazebo.urdf.xacro in sensors-description
 	 repo, commit 3fb6f787-->
-	  <xacro:property name="camera_fov" value="3.0"/>
+	<!--
+	  <xacro:property name="camera_fov" value="1.0"/>
 	  <xacro:property name="camera_width" value="640"/> 
 	  <xacro:property name="camera_height" value="480"/>
 	  <xacro:property name="camera_near" value="0.1"/>
 	  <xacro:property name="camera_far" value="100"/>    
-	  <xacro:property name="m_camera" value="0.07"/> <!--??-->
+	  <xacro:property name="m_camera" value="0.07"/>
 
 	<xacro:d435_camera 
 		parent="wrist_3_link" 
@@ -68,7 +80,7 @@ safety_k_position="$(arg safety_k_position)"/>
 		<origin xyz="0.05 0.0 -0.02" rpy="0 -1.57 0.0"/>
 	</xacro:d435_camera>
 
-	<xacro:property name="camera_fov" value="3.0"/>
+	<xacro:property name="camera_fov" value="1.0"/>
 	<xacro:property name="camera_width" value="640"/> 
 	<xacro:property name="camera_height" value="480"/>
 	<xacro:property name="camera_near" value="0.01"/>
@@ -79,7 +91,7 @@ safety_k_position="$(arg safety_k_position)"/>
 		name="z_base_camera"
 		camera_plugin="true">  
 		<origin xyz="0.0 -0.3 -0.5" rpy="0.0  0.5 1.57"/>
-	</xacro:d435_camera>
+	</xacro:d435_camera> -->
 
 
 </xacro:if>

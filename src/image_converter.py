@@ -33,7 +33,7 @@ def main():
     # img = ax.imshow(img, cmap='viridis')
     rospy.init_node('image_listener', disable_signals=True)
     # Define your image topic
-    image_topic = "/z_base_camera/camera/rgb/image_raw"
+    image_topic = "/ur5/zed_node/left_raw/image_raw_color"
     # Set up your subscriber and define its callback
     rospy.Subscriber(image_topic, Image, image_converter)
     # Spin until ctrl + c
