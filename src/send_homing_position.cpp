@@ -9,6 +9,9 @@
 ros::Publisher pub;
 bool done = false;
 
+
+/// @brief callback for the clock topic
+/// @param msg the message containing the current time
 void clockCallback(const rosgraph_msgs::Clock::ConstPtr& msg)
 {
     if (msg->clock.toSec() > 0.0 && !done)
