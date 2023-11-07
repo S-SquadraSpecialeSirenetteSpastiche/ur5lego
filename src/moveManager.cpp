@@ -19,15 +19,22 @@ MoveManager::MoveManager(){
 
     //NodeHandle nh;
     height = 1; //da sistemare;
-    fixed_pos.position.x = 0.3; //da sistemare
-    fixed_pos.position.y = height; //da sistemare
-    fixed_pos.position.z = 0.3; //da sistemare
-    fixed_pos.orientation.x = 3.14; //da sistemare
-    fixed_pos.orientation.y = 3.14; //da sistemare
-    fixed_pos.orientation.z = 3.14; //da sistemare*/
+    fixed_pos.position.x = (_Float32)(0.3); //da sistemare
+    fixed_pos.position.y = (_Float32)(0.3); //da sistemare
+    fixed_pos.position.z = (_Float32)(0.3); //da sistemare
+    fixed_pos.orientation.x = (_Float64)(1.5707); //da sistemare
+    fixed_pos.orientation.y = (_Float64)(-1.5707); //da sistemare
+    fixed_pos.orientation.z = (_Float64)(0); //da sistemare*/
+
+    homing.position.x = (_Float32)(-0.32); //da sistemare
+    homing.position.y = (_Float32)(0.38); //da sistemare
+    homing.position.z = (_Float32)(0.2); //da sistemare
+    homing.orientation.x = (_Float64)(1.5707); //da sistemare
+    homing.orientation.y = (_Float64)(-1.5707); //da sistemare
+    homing.orientation.z = (_Float64)(0); //da sistemare*/
 }   
 
-void MoveManager::goalSetter(_Float32 X, _Float32 Y, _Float32 Z, _Float32 r, _Float32 p, _Float32 y, ur5lego::MoveGoal & goal){
+void MoveManager::goalSetter(_Float32 X, _Float32 Y, _Float32 Z, _Float64 r, _Float64 p, _Float64 y, ur5lego::MoveGoal & goal){
     //save position
     goal.X = X;
     goal.Y = Y;
@@ -37,7 +44,7 @@ void MoveManager::goalSetter(_Float32 X, _Float32 Y, _Float32 Z, _Float32 r, _Fl
     goal.r = r;
     goal.p = p;
     goal.y = y;
-    ROS_INFO_STREAM("Y  nellla  funzione: "<<goal.Y);
+    ROS_INFO("Action:   Coordinates: %f, %f, %f", goal.X, goal.Y, goal.Z);
 
     ROS_INFO_STREAM("Goal setted, ready to be sent\n");
 }
@@ -96,27 +103,32 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         //move above the object
         goalSetter(X,Y,Z-d,r,p,y, goal);
         goalSender(goal);
-        /*
+        
         //descend and grab the object
         goalSetter(X,Y,Z,r,p,y, goal);
         goalSender(goal);
         //grab(true) -> is an action! not implemented yet
         
         //lift the brick
-        goalSetter(X,Y-d,Z,r,p,y, goal);
+        goalSetter(X,Y,Z-d,r,p,y, goal);
         goalSender(goal);
         //TODO: GRAB
-
+        
         //move the brick to fixed_pos
         goalSetter(fixed_pos, goal);
         goalSender(goal);
-
+        
         //lower the brick -> da sistemare
-        goalSetter(fixed_pos, goal);
+        goalSetter(fixed_pos.position.x, fixed_pos.position.y, fixed_pos.position.z+d, fixed_pos.orientation.x, fixed_pos.orientation.y, fixed_pos.orientation.z, goal);
         goalSender(goal);
-        fixed_pos.position.y = fixed_pos.position.y-0.1;
+
+        //return to homing position
+        goalSetter(homing, goal);
+        goalSender(goal);
+        //
+        //fixed_pos.position.y = fixed_pos.position.y-0.1;
         //grab(false)
-        */
+        
         pos_msgs.pop();
     }
 }  

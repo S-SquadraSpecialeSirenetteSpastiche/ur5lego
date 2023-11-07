@@ -21,14 +21,14 @@ int main(int argc, char **argv){
 
   Publisher chatter_pub = nh.advertise<ur5lego::Pose>("lego_position", 1000);
 
-  Rate loop_rate(0.2);
+  Rate loop_rate(0.05);
 
   int count = 0;
   while (ok())
   {
 
     ur5lego::Pose msg;
-    msg.position.x = (_Float32)(0.45+(rand()%10)/100.0); //(rand()%10)/20;
+    msg.position.x = (_Float32)(0.45); //(rand()%10)/20;
     msg.position.y = (_Float32)(0.43); //(rand()%10)/30;
     msg.position.z = (_Float32)(0.5);
     msg.orientation.x = (_Float64)(1.5707);

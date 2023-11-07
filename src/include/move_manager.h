@@ -14,11 +14,12 @@ class MoveManager {
     ros::Subscriber test_position;
    
     int height;
-    const int d = 0.1;
+    _Float32 d = 0.3;
     ur5lego::Pose fixed_pos;
+    ur5lego::Pose homing;
     
     MoveManager();
-    void goalSetter(_Float32 X, _Float32 Y, _Float32 Z, _Float32 r, _Float32 p, _Float32 y, ur5lego::MoveGoal & goal);
+    void goalSetter(_Float32 X, _Float32 Y, _Float32 Z, _Float64 r, _Float64 p, _Float64 y, ur5lego::MoveGoal & goal);
     void goalSetter(ur5lego::Pose msg, ur5lego::MoveGoal & goal);
     void goalSender(ur5lego::MoveGoal & goal);
     void actionPlanner(std::queue<ur5lego::Pose::ConstPtr> &pos_msgs);
