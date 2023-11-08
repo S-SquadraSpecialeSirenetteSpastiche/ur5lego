@@ -31,8 +31,22 @@ namespace gazebo
             this->rosSub = this->rosNode->subscribe("/connect_links", 1, &ConnectLinksPlugin::OnRequest, this);
         }
 
+        /// @brief Callback function for the ROS subscriber
+        /// @param msg ROS message containing the names of the models and links to connect
         void OnRequest(const ur5lego::ConnectLinks::ConstPtr& msg) {
-            ConnectLinks(msg->model1, msg->link1, msg->model2, msg->link2);
+            if(msg->connect){
+                ROS_INFO("connecting link");
+                ConnectLinks(msg->model1, msg->link1, msg->model2, msg->link2);
+            } else {
+                ROS_INFO("disconnecting link");
+                if(this->lego_joint != NULL){
+                    this->lego_joint->Detach();
+                    this->lego_joint.reset();
+                    this->lego_joint = NULL;
+                } else {
+                    ROS_WARN("joint was already detached");
+                }
+            }
         }
 
         /// @brief Connects two links from two different models
@@ -70,17 +84,18 @@ namespace gazebo
             }
 
             // Create a joint between the two links
-            physics::JointPtr joint = this->world->Physics()->CreateJoint("revolute", this->world->ModelByName(model1_name));
-            joint->Load(link1, link2, ignition::math::Pose3d());
+            this->lego_joint = this->world->Physics()->CreateJoint("revolute", this->world->ModelByName(model1_name));
+            this->lego_joint->Load(link1, link2, ignition::math::Pose3d());
 
             // Initialize the joint
-            joint->Init();
+            this->lego_joint->Init();
         }
 
     private:
         physics::WorldPtr world;    // pointer to the simulated world
         ros::NodeHandlePtr rosNode; // pointer to the ROS node
         ros::Subscriber rosSub;     // pointer to the ROS subscriber that listens for requests to connect links
+        physics::JointPtr lego_joint;   // pointer to the joint from the wrist to the lego
     };
 
     GZ_REGISTER_WORLD_PLUGIN(ConnectLinksPlugin)

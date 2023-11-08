@@ -6,5 +6,5 @@ rostopic pub /connect_links ur5lego/ConnectLinks "{
     'link1': 'wrist_3_link', 
     'model2': 'block1', 
     'link2': 'block', 
-    'connect': True
+    'connect': $1
 }" -1
