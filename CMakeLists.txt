@@ -57,11 +57,9 @@ target_link_libraries(link_controller_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRAR
 
 
 add_executable(ur5lego_move_server src/move_server.cpp)
-add_executable(ur5lego_move_client src/move_client.cpp)
 add_executable(ur5lego_send_homing_position src/send_homing_position.cpp)
 add_executable(ur5lego_move_server_wrapper src/move_server_wrapper.cpp)
 
 target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES} pinocchio::pinocchio inverse_kinematics math trajectory)
-target_link_libraries(ur5lego_move_client ${catkin_LIBRARIES})
 target_link_libraries(ur5lego_send_homing_position ${catkin_LIBRARIES} trajectory)
 target_link_libraries(ur5lego_move_server_wrapper ${catkin_LIBRARIES})
