@@ -9,7 +9,6 @@
 #include <actionlib/server/simple_action_server.h>
 #include <ur5lego/MoveAction.h>
 #include <string>
-#include <iostream>
 
 
 /// @brief action server that moves the robot
@@ -55,16 +54,18 @@ public:
     /// @brief callback for the action server
     /// @param goal the goal sent by the client
     void executeCB(const ur5lego::MoveGoalConstPtr &goal){
-        ROS_INFO_STREAM("Received goal: " << coordsToStr(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y) << " to do in " << goal->time << "s");
+        ROS_INFO_STREAM("Received goal: " << 
+            coordsToStr(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y) << " to do in " << goal->time << "s");
 
-        std::pair<Eigen::VectorXd, bool> res = inverse_kinematics_wrapper(
+        std::pair<Eigen::VectorXd, bool> res = inverse_kinematics(
             model_, Eigen::Vector3d(goal->X, goal->Y, goal->Z), Eigen::Vector3d(goal->r, goal->p, goal->y), q);
 
         if(res.second){
             computeAndSendTrajectory(q, res.first, goal->time, 200, publisher);
             q = res.first;
+            ROS_INFO("Inverse kinematics succeded");
         } else {
-            ROS_ERROR("Inverse kinematics failed");
+            ROS_WARN("Inverse kinematics failed");
         }
 
         result_.success = res.second;

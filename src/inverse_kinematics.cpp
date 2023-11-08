@@ -7,7 +7,7 @@
 /// @param target_orientation_rpy   the desired orientation of the end effector, in roll pitch yaw representation
 /// @param q0                   the initial guess for the inverse kinematics
 /// @return a pair containing the solution of the inverse kinematics and a boolean value indicating if the algorithm was successful
-std::pair<Eigen::VectorXd, bool> inverse_kinematics_wrapper(
+std::pair<Eigen::VectorXd, bool> inverse_kinematics(
     pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Eigen::VectorXd q0){
 
     pinocchio::Data data(model);
@@ -16,8 +16,6 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics_wrapper(
     pinocchio::computeAllTerms(model, data, q0, Eigen::VectorXd::Zero(model.nv));
     pinocchio::SE3 start_pos = pinocchio::updateFramePlacement(model, data, frame_id);
 
-    // float distance = (target_position - start_pos.translation(), errorInSO3(start_pos.rotation(), euler_to_rotation_matrix(Eigen::Vector3d(target_orientation_rpy)))).norm();
-    // ROS_INFO_STREAM("distance: " << distance);
     const int n_steps = 4;
 
     Eigen::VectorXd q(6);
@@ -25,7 +23,7 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics_wrapper(
     Eigen::Vector3d orientation_sofar = pinocchio::rpy::matrixToRpy(start_pos.rotation());
     q = q0;
 
-    double step_size[6];    // non è proprio una dimensione perchè potrebbe essere negativa ma così è più comodo sommarla
+    double step_size[6];    // not a size since it could be negative but this way it's easier to add
     for(int i=0; i<3; i++){
         step_size[i] = (target_position[i] - position_sofar[i])/(double)n_steps;
         step_size[i+3] = (target_orientation_rpy[i] - orientation_sofar[i])/(double)n_steps;
@@ -37,9 +35,9 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics_wrapper(
             orientation_sofar[j] += step_size[j+3];
         }
 
-        std::pair<Eigen::VectorXd, bool> ikresult = inverse_kinematics(model, position_sofar, orientation_sofar, q);
+        std::pair<Eigen::VectorXd, bool> ikresult = inverse_kinematics_(model, position_sofar, orientation_sofar, q);
         if(!ikresult.second)
-            return std::make_pair(q, false);    // il valore di q qui è irrilevante perchè l'algoritmo non ha avuto successo
+            return std::make_pair(q, false);    // the algorithm failed so q is irrelevant
         q = ikresult.first;
     }
 
@@ -53,7 +51,7 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics_wrapper(
 /// @param target_orientation_rpy   the desired orientation of the end effector, in roll pitch yaw representation
 /// @param q0                   the initial guess for the inverse kinematics
 /// @return a pair containing the solution of the inverse kinematics and a boolean value indicating if the algorithm was successful
-std::pair<Eigen::VectorXd, bool> inverse_kinematics(
+std::pair<Eigen::VectorXd, bool> inverse_kinematics_(
     pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Eigen::VectorXd q0){
 
     Eigen::Matrix3d target_orientation = euler_to_rotation_matrix(Eigen::Vector3d(target_orientation_rpy));

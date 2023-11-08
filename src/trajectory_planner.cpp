@@ -1,4 +1,5 @@
 #include "include/trajectory_planner.h"
+#include <std_msgs/Float64MultiArray.h>
 
 
 /// @brief sends the joint angles with a given publisher
@@ -14,11 +15,11 @@ void send_joint_positions(ros::Publisher publisher, Eigen::VectorXd q){
 }
 
 
-/// @brief sends the commands to bring the joints from a position to another
+/// @brief sends the joint angles with a given publisher
 /// @param qi       the startiong joint positions
 /// @param qf       the target joint positions
 /// @param t        the time to go from the starting position to the target
-/// @param steps    the number of commands to send
+/// @param steps    the number of steps to make while sending the positions
 void computeAndSendTrajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float tf, int steps, ros::Publisher publisher){
     float dt = tf/steps;
     float time = 0;
