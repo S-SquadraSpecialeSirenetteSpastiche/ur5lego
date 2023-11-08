@@ -1,4 +1,4 @@
-#include "include/math_tools.h"
+#include "../include/math_tools.h"
 
 
 /// @brief computes the coefficients of a fifth order polynomial, to move a joint from a position to another

@@ -1,4 +1,4 @@
-#include "include/inverse_kinematics.h"
+#include "../include/inverse_kinematics.h"
 
 
 /// @brief computes the inverse kinematics of a 6DOF robot
