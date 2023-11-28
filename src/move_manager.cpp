@@ -11,6 +11,8 @@
 using namespace ros;
 using namespace std;
 
+
+
 MoveManager::MoveManager(){
     ac = new  actionlib::SimpleActionClient<ur5lego::MoveAction>("move_server", true);
     ROS_INFO("Waiting for action server to start.");

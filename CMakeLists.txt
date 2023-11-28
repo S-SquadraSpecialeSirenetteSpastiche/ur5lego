@@ -53,7 +53,7 @@ include_directories(
 add_library(math src/math_tools.cpp)
 add_library(inverse_kinematics src/inverse_kinematics.cpp)
 add_library(trajectory src/trajectory_planner.cpp)
-add_library(ur5lego_move_manager STATIC src/moveManager.cpp)
+add_library(ur5lego_move_manager STATIC src/move_manager.cpp)
 
 target_link_libraries(trajectory ${catkin_LIBRARIES} math inverse_kinematics)
 
