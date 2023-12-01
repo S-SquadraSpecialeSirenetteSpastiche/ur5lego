@@ -48,6 +48,7 @@ public:
         const std::string urdf_file = ros::package::getPath(PACKAGE_NAME) + std::string(UR_DESCRIPTION);
         pinocchio::urdf::buildModel(urdf_file, model_);
         q = Eigen::VectorXd(6);
+        q_curr = Eigen::VectorXd(9);
         q_gripper = Eigen::VectorXd::Zero(3);
         q << -0.32, -0.78, -2.56, -1.63, -1.57, 3.49;   // homing position
         q_curr << q, q_gripper;
@@ -175,7 +176,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "action_server");
 
     MoveAction moveAction("move_server");
-    GripperAction gripperAction("gripper_server");
+    // GripperAction gripperAction("gripper_server");
 
     ROS_INFO_STREAM("Move server ready.");
     ROS_INFO_STREAM("Gripper server ready.");
