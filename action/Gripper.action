@@ -1,0 +1,8 @@
+# goal definition
+float32 finger
+float32 time
+---
+# result definition
+bool success
+---
+# feedback (no feedback is provided)

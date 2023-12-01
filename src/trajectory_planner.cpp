@@ -6,9 +6,9 @@
 /// @param q         the vector to send
 void send_joint_positions(ros::Publisher publisher, Eigen::VectorXd q){
     std_msgs::Float64MultiArray command;
-    command.data.resize(6);
-    for(int i=0; i<6; i++)
-        command.data[i] = (float)q[i];
+    command.data.resize(9);
+    for(int i=0; i<9; i++)
+        command.data[i] = (_Float64)q[i];
     publisher.publish(command);
     ros::spinOnce();    // spin once to make sure the callback is processed
 }
@@ -30,7 +30,7 @@ void computeAndSendTrajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float tf, 
 
     Eigen::VectorXd q_diff = (q-qf).cwiseAbs();
     while(time < tf){
-        for(int jointi=0; jointi<6; jointi++){
+        for(int jointi=0; jointi<9; jointi++){
             c = thirdOrderPolynomialTrajectory(tf, qi[jointi], qf[jointi]);
             q[jointi] = c[0] + c[1]*time + c[2]*pow(time,2) + c[3]*pow(time,3);
         }

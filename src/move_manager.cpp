@@ -2,6 +2,7 @@
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 #include <ur5lego/MoveAction.h>
+#include <ur5lego/GripperAction.h>
 #include <std_msgs/String.h>
 #include "geometry_msgs/Pose.h"
 #include "ur5lego/Pose.h"
@@ -14,13 +15,25 @@ using namespace std;
 
 
 MoveManager::MoveManager(){
-    ac = new  actionlib::SimpleActionClient<ur5lego::MoveAction>("move_server", true);
-    ROS_INFO("Waiting for action server to start.");
+    ac = new actionlib::SimpleActionClient<ur5lego::MoveAction>("move_server", true);
+    gripper = new actionlib::SimpleActionClient<ur5lego::GripperAction>("gripper_server", true);
+    ROS_INFO("Waiting for move server to start.");
     ac->waitForServer();
-    ROS_INFO("Action server started.");
+    ROS_INFO("Move server started.");
+    ROS_INFO("Waiting for gripper server to start.");
+    gripper->waitForServer();
+    ROS_INFO("Gripper server started.");
 
     //NodeHandle nh;
     height = 1; //da sistemare;
+
+    closed[0] = 0.0;
+    closed[1] = 0.0;
+    closed[2] = 0.0;
+    open[0] = 0.1;
+    open[0] = 0.1;
+    open[0] = 0.1;
+
     fixed_pos.position.x = (_Float32)(0.3); //da sistemare
     fixed_pos.position.y = (_Float32)(0.3); //da sistemare
     fixed_pos.position.z = (_Float32)(0.3); //da sistemare

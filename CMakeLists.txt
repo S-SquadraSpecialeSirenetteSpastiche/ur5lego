@@ -20,7 +20,7 @@ find_package(
 
 add_action_files(
     DIRECTORY action
-    FILES Move.action
+    FILES Move.action Gripper.action
 )
 
 add_message_files(
