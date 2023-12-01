@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "send_homing_position");
     ros::NodeHandle nh;
-    pub = nh.advertise<std_msgs::Float64MultiArray>("/ur5/joint_group_pos_controller/command", 10);
+    pub = nh.advertise<std_msgs::Float64MultiArray>("/arm_joint_position", 10);
     ros::Subscriber sub = nh.subscribe("/clock", 10, clockCallback);
 
     while(!done){

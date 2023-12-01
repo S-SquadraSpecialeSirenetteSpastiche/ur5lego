@@ -11,7 +11,7 @@
         safety_pos_margin:=0.15
         safety_k_position:=20
         gazebo:=true
-        gripper:=false"	
+        gripper:=true"	
     />
 
     <!-- launch gzserver -->
