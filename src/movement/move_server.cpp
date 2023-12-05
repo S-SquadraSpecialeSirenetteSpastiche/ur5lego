@@ -23,7 +23,7 @@ class MoveAction
 protected:
     const std::string PACKAGE_NAME = "ur5lego";
     const std::string UR_DESCRIPTION = "/robot_description/ur5.urdf";
-    const std::string PUBLISHING_CHANNEL = "/ur5/joint_group_pos_controller/command";
+    const std::string PUBLISHING_CHANNEL = "/arm_joint_position";
 
     // node that acts as action server
     ros::NodeHandle server_node;

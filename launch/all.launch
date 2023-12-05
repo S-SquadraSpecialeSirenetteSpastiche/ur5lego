@@ -13,6 +13,9 @@
     <node name="move_server" pkg="ur5lego" type="ur5lego_move_server"/>
     <node name="move_server_wrapper" pkg="ur5lego" type="ur5lego_move_server_wrapper"/>
 
+    <!-- start the position publisher -->
+    <node name="position_publisher" pkg="ur5lego" type="ur5lego_position_publisher"/>
+
     <include file="$(find ur5lego)/launch/spawn_robot.launch">
         <arg name="robot_name" value="$(arg robot_name)" />
     </include>
