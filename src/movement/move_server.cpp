@@ -1,5 +1,5 @@
-#include "include/inverse_kinematics.h"
-#include "include/trajectory_planner.h"
+#include "../include/inverse_kinematics.h"
+#include "../include/trajectory_planner.h"
 
 #include "pinocchio/parsers/urdf.hpp"
 #include "std_msgs/Float64MultiArray.h"
@@ -10,7 +10,6 @@
 #include <ur5lego/MoveAction.h>
 #include <ur5lego/GripperAction.h>
 #include <string>
-#include <iostream>
 
 
 Eigen::VectorXd q;  // current configuration of arms 
@@ -63,9 +62,10 @@ public:
     /// @brief callback for the action server
     /// @param goal the goal sent by the client
     void executeCB(const ur5lego::MoveGoalConstPtr &goal){
-        ROS_INFO_STREAM("Received goal: " << coordsToStr(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y) << " to do in " << goal->time << "s");
+        ROS_INFO_STREAM("Received goal: " << 
+            coordsToStr(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y) << " to do in " << goal->time << "s");
 
-        std::pair<Eigen::VectorXd, bool> res = inverse_kinematics_wrapper(
+        std::pair<Eigen::VectorXd, bool> res = inverse_kinematics(
             model_, Eigen::Vector3d(goal->X, goal->Y, goal->Z), Eigen::Vector3d(goal->r, goal->p, goal->y), q);
         
         Eigen::VectorXd q_def = Eigen::VectorXd(9);
@@ -82,11 +82,9 @@ public:
             q_def << res.first, q_gripper;
             computeAndSendTrajectory(q_curr, q_def, goal->time, 200, publisher);
             q = res.first;
-            for(int i = 0; i < 6; i++){
-                q_curr[i] = q[i];
-            }
+            ROS_INFO("Inverse kinematics succeded");
         } else {
-            ROS_ERROR("Inverse kinematics failed");
+            ROS_WARN("Inverse kinematics failed");
         }
 
         result_.success = res.second;

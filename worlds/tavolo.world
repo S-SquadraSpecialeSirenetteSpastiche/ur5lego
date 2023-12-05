@@ -27,5 +27,7 @@
     </camera>
     </gui>
 
+    <plugin name="link_controller" filename="liblink_controller_plugin.so">
+    </plugin>
   </world>
 </sdf>

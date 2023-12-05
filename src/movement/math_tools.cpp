@@ -1,4 +1,4 @@
-#include "include/math_tools.h"
+#include "../include/math_tools.h"
 
 
 /// @brief computes the coefficients of a fifth order polynomial, to move a joint from a position to another
@@ -95,6 +95,10 @@ Eigen::Matrix3d euler_to_rotation_matrix(Eigen::Vector3d rpy){
 }
 
 
+/// @brief calculates the error between two rotation matrices
+/// @param r1 the first rotation matrix
+/// @param r2 the second rotation matrix
+/// @return a vector containing the error between the two rotation matrices in rpy notation
 Eigen::Vector3d errorInSO3(Eigen::Matrix3d r1, Eigen::Matrix3d r2){
     return r1*pinocchio::log3(r1.transpose()*r2);
 }

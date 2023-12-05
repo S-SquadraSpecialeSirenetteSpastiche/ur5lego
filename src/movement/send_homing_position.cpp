@@ -1,14 +1,16 @@
-#include "include/trajectory_planner.h"
+#include "../include/trajectory_planner.h"
 
 #include <ros/ros.h>
 #include <std_msgs/Float64MultiArray.h>
-
 #include <rosgraph_msgs/Clock.h>
 
 
 ros::Publisher pub;
 bool done = false;
 
+
+/// @brief callback for the clock topic
+/// @param msg the message containing the current time
 void clockCallback(const rosgraph_msgs::Clock::ConstPtr& msg)
 {
     if (msg->clock.toSec() > 0.0 && !done)

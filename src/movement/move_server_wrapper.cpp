@@ -5,6 +5,9 @@
 
 typedef actionlib::SimpleActionClient<ur5lego::MoveAction> MoveActionClient;
 
+
+/// @brief callback for the move_channel topic
+/// @param msg the message containing the goal to send to the move server
 void moveCallback(const std_msgs::Float32MultiArray::ConstPtr& msg)
 {
     if (msg->data.size() != 7) {
