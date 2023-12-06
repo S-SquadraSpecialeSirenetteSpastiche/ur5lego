@@ -61,8 +61,11 @@ add_executable(ur5lego_move_server src/movement/move_server.cpp)
 add_executable(ur5lego_send_homing_position src/movement/send_homing_position.cpp)
 add_executable(ur5lego_move_server_wrapper src/movement/move_server_wrapper.cpp)
 add_executable(ur5lego_position_publisher src/movement/position_publisher.cpp)
+add_executable(ur5lego_gripper_server src/movement/gripper_server.cpp)
+
 
 target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES} pinocchio::pinocchio inverse_kinematics math trajectory)
 target_link_libraries(ur5lego_send_homing_position ${catkin_LIBRARIES} trajectory)
 target_link_libraries(ur5lego_move_server_wrapper ${catkin_LIBRARIES})
 target_link_libraries(ur5lego_position_publisher ${catkin_LIBRARIES})
+target_link_libraries(ur5lego_gripper_server ${catkin_LIBRARIES} math trajectory)
