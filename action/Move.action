@@ -1,10 +1,10 @@
 # goal definition
-float32 X
-float32 Y
-float32 Z
-float32 r
-float32 p
-float32 y
+float64 X
+float64 Y
+float64 Z
+float64 r
+float64 p
+float64 y
 float32 time
 ---
 # result definition

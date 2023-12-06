@@ -1,5 +1,5 @@
 # goal definition
-float32 finger
+float64 finger
 float32 time
 ---
 # result definition
