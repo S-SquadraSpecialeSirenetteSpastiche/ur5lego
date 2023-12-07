@@ -11,10 +11,7 @@
 #include <string>
 
 
-Eigen::VectorXd q;  // current configuration of arms 
-Eigen::VectorXd q_gripper; //current configuration of gripper
-Eigen::VectorXd q_curr; //current configuration of arms and gripper
-bool gripper_open = true;
+
 
 /// @brief action server that moves the robot
 class MoveAction
@@ -35,6 +32,7 @@ protected:
     // create messages that are used to published feedback/result
     ur5lego::MoveFeedback feedback_;
     ur5lego::MoveResult result_;
+    Eigen::VectorXd q;  // current configuration of arms    
     
     pinocchio::Model model_;    // the model of the robot
 

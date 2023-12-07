@@ -5,7 +5,10 @@
     <include file="$(find ur5lego)/launch/start_gazebo.launch"></include>
     <include file="$(find ur5lego)/launch/move_subscriber.launch"></include>
     <include file="$(find ur5lego)/launch/move_publisher.launch"></include>
+    <node name="position_publisher" pkg="ur5lego" type="ur5lego_position_publisher"/>
+    <!-- start the move server and its wrapper-->
     <node name="move_server" pkg="ur5lego" type="ur5lego_move_server"/>
+    <node name="move_server_wrapper" pkg="ur5lego" type="ur5lego_move_server_wrapper"/>
     <node name="gripper_server" pkg="ur5lego" type="ur5lego_gripper_server"/>
 
     <include file="$(find ur5lego)/launch/spawn_robot.launch">
