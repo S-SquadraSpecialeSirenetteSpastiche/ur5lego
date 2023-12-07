@@ -15,24 +15,17 @@ using namespace std;
 
 
 MoveManager::MoveManager(){
-    ac = new actionlib::SimpleActionClient<ur5lego::MoveAction>("move_server", true);
-    gripper = new actionlib::SimpleActionClient<ur5lego::GripperAction>("gripper_server", true);
+    move_client = new actionlib::SimpleActionClient<ur5lego::MoveAction>("move_server", true);
+    gripper_client = new actionlib::SimpleActionClient<ur5lego::GripperAction>("gripper_server", true);
     ROS_INFO("Waiting for move server to start.");
-    ac->waitForServer();
+    move_client->waitForServer();
     ROS_INFO("Move server started.");
     ROS_INFO("Waiting for gripper server to start.");
-    gripper->waitForServer();
+    gripper_client->waitForServer();
     ROS_INFO("Gripper server started.");
 
     //NodeHandle nh;
     height = 1; //da sistemare;
-
-    closed[0] = 0.0;
-    closed[1] = 0.0;
-    closed[2] = 0.0;
-    open[0] = 0.1;
-    open[0] = 0.1;
-    open[0] = 0.1;
 
     fixed_pos.position.x = (_Float32)(0.3); //da sistemare
     fixed_pos.position.y = (_Float32)(0.3); //da sistemare
@@ -82,12 +75,12 @@ void MoveManager::goalSetter(ur5lego::Pose msg, ur5lego::MoveGoal & goal){
 
 
 void MoveManager::goalSender(ur5lego::MoveGoal & goal){
-    ac->sendGoal(goal);
+    move_client->sendGoal(goal);
     ROS_INFO("Goal sent");
-    bool finished_before_timeout = ac->waitForResult(ros::Duration(30.0));
+    bool finished_before_timeout = move_client->waitForResult(ros::Duration(30.0));
     if (finished_before_timeout)
     {
-        actionlib::SimpleClientGoalState state = ac->getState();
+        actionlib::SimpleClientGoalState state = move_client->getState();
         ROS_INFO("Action finished: %s",state.toString().c_str());
     }
     else
@@ -97,6 +90,17 @@ void MoveManager::goalSender(ur5lego::MoveGoal & goal){
     }
 }
 
+void MoveManager::grab(ur5lego::GripperGoal goal, bool grab){
+    if(grab){
+        goal.finger = 2.0;
+    }else{
+        goal.finger = 0.0;
+    }
+        goal.time = 3.0;
+    ROS_INFO_STREAM("Gripper goal setted, ready to be sent.");
+    gripper_client->sendGoal(goal);
+}
+
 
 void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
 
@@ -104,6 +108,7 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
     if(!pos_msgs.empty()){
         ur5lego::Pose::ConstPtr msg = pos_msgs.front();
         ur5lego::MoveGoal goal;
+        ur5lego::GripperGoal hand;
         
         //save position
         _Float32 X = msg->position.x;
@@ -125,6 +130,8 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         goalSetter(X,Y,Z,r,p,y, goal);
         goalSender(goal);
         //grab(true) -> is an action! not implemented yet
+        grab(hand, true);
+
         
         //lift the brick
         goalSetter(X,Y,Z-d,r,p,y, goal);
@@ -144,7 +151,8 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         goalSender(goal);
         //
         //fixed_pos.position.y = fixed_pos.position.y-0.1;
-        //grab(false)
+        grab(hand, false);
+
         
         pos_msgs.pop();
     }

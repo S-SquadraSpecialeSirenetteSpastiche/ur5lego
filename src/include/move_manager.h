@@ -11,22 +11,22 @@
 
 class MoveManager {
     public:
-    actionlib::SimpleActionClient<ur5lego::MoveAction> * ac;
-    actionlib::SimpleActionClient<ur5lego::GripperAction> * gripper;
+    actionlib::SimpleActionClient<ur5lego::MoveAction> * move_client;
+    actionlib::SimpleActionClient<ur5lego::GripperAction> * gripper_client;
     ros::Subscriber test_position;
    
     int height;
     _Float32 d = 0.3;
     ur5lego::Pose fixed_pos;
     ur5lego::Pose homing;
-    _Float64 closed[3];
-    _Float64 open[3];
     
     MoveManager();
     void goalSetter(_Float32 X, _Float32 Y, _Float32 Z, _Float64 r, _Float64 p, _Float64 y, ur5lego::MoveGoal & goal);
     void goalSetter(ur5lego::Pose msg, ur5lego::MoveGoal & goal);
     void goalSender(ur5lego::MoveGoal & goal);
+    void grab(ur5lego::GripperGoal goal, bool grab);
     void actionPlanner(std::queue<ur5lego::Pose::ConstPtr> &pos_msgs);
+    
 };
 
 #endif
