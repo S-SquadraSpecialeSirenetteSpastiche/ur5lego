@@ -12,7 +12,6 @@
 
 
 
-
 /// @brief action server that moves the robot
 class MoveAction
 {
@@ -58,14 +57,16 @@ public:
     void executeCB(const ur5lego::MoveGoalConstPtr &goal){
         ROS_INFO_STREAM("Received goal: " << 
             coordsToStr(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y) << " to do in " << goal->time << "s");
-
+        ROS_INFO("Executing inverse kinematics.");
         std::pair<Eigen::VectorXd, bool> res = inverse_kinematics(
             model_, Eigen::Vector3d(goal->X, goal->Y, goal->Z), Eigen::Vector3d(goal->r, goal->p, goal->y), q);
         
         if(res.second){
-            computeAndSendTrajectory(q, res.first, goal->time, 200, publisher);
-            q = res.first;
             ROS_INFO("Inverse kinematics succeded");
+            computeAndSendTrajectory(q, res.first, goal->time, 200, publisher);
+            ROS_INFO("Trajectory sent.");
+            q = res.first;
+
         } else {
             ROS_WARN("Inverse kinematics failed");
         }
