@@ -2,7 +2,11 @@
 #include <Eigen/Eigen>
 #include <std_msgs/Float64MultiArray.h>
 #include <std_msgs/Float64.h>
+#include <trajectory_msgs/JointTrajectory.h>
+#include <vector>
+#include <string>
 
+const bool REAL_ROBOT = true;
 
 class JointPositionPublisher {
     public:
@@ -17,15 +21,32 @@ class JointPositionPublisher {
 
         /// @brief sends the joint angles with a given publisher
         void send_joint_positions(){
-            std_msgs::Float64MultiArray command;
-            command.data.resize(joint_positions.size()+gripper_positions.size());
+            if(REAL_ROBOT){
+                trajectory_msgs::JointTrajectory command;
+                command.joint_names.resize(joint_positions.size()+gripper_positions.size());
+                command.points.resize(1);
+                command.points[0].positions.resize(joint_positions.size());
+                std::vector<std::string> joint_names = {
+                    "shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
+                    "wrist_1_joint", "wrist_2_joint", "wrist_3_joint"
+                };
+                for (int i=0; i<joint_positions.size(); i++){
+                    command.joint_names[i] = joint_names[i];
+                    command.points[0].positions[i] = joint_positions[i];
 
-            for(int i=0; i<joint_positions.size(); i++)
-                command.data[i] = (float)joint_positions[i];
-            for(int i=joint_positions.size(); i<joint_positions.size()+gripper_positions.size(); i++)
-                command.data[i] = (float)gripper_positions[i-joint_positions.size()];
-
-            pub_.publish(command);
+                    ROS_INFO_STREAM("Joint " << joint_names[i] << " set to " << joint_positions[i]);
+                }
+                pub_.publish(command);
+            } 
+            else {
+                std_msgs::Float64MultiArray command;
+                command.data.resize(joint_positions.size()+gripper_positions.size());
+                for(int i=0; i<joint_positions.size(); i++)
+                    command.data[i] = (float)joint_positions[i];
+                for(int i=joint_positions.size(); i<joint_positions.size()+gripper_positions.size(); i++)
+                    command.data[i] = (float)gripper_positions[i-joint_positions.size()];
+                pub_.publish(command);
+            }
             ros::spinOnce();    // spin once to make sure the callback is processed
         }
 
@@ -55,7 +76,13 @@ class JointPositionPublisher {
 int main(int argc, char** argv){
     ros::init(argc, argv, "joint_position_publisher");
     ros::NodeHandle nh;
-    ros::Publisher pub = nh.advertise<std_msgs::Float64MultiArray>("/ur5/joint_group_pos_controller/command", 10);
+    ros::Publisher pub;
+    if (REAL_ROBOT) {
+        pub = nh.advertise<trajectory_msgs::JointTrajectory>("/scaled_pos_joint_traj_controller/command", 10);
+    }
+    else {
+        pub = nh.advertise<std_msgs::Float64MultiArray>("/ur5/joint_group_pos_controller/command", 10);
+    }  
     JointPositionPublisher joint_position_publisher(pub, nh, 6, 3);
     
     ros::spin();
