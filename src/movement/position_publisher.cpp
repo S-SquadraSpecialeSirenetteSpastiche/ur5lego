@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 
-const bool REAL_ROBOT = true;
+const bool REAL_ROBOT = false;
 
 class JointPositionPublisher {
     public:
@@ -83,7 +83,7 @@ int main(int argc, char** argv){
     else {
         pub = nh.advertise<std_msgs::Float64MultiArray>("/ur5/joint_group_pos_controller/command", 10);
     }  
-    JointPositionPublisher joint_position_publisher(pub, nh, 6, 3);
+    JointPositionPublisher joint_position_publisher(pub, nh, 6, 0);
     
     ros::spin();
     return 0;
