@@ -4,25 +4,21 @@
     <!-- start console -->
     <node name="rqt_console" pkg="rqt_console" type="rqt_console"/>
 
-    <!-- start gazebo -->
-    <include file="$(find ur5lego)/launch/start_gazebo.launch"></include>
+    <include file="$(find ros_impedance_controller)/launch/ros_impedance_controller_ur5.launch">
+        <arg name="gui" value="false" />
+    </include>
 
     <!-- start the move server and its wrapper-->
     <node name="move_server" pkg="ur5lego" type="ur5lego_move_server"/>
     <node name="move_server_wrapper" pkg="ur5lego" type="ur5lego_move_server_wrapper"/>
 
-    <!-- start the position publisher -->
-    <node name="position_publisher" pkg="ur5lego" type="ur5lego_position_publisher"/>
-
-    <include file="$(find ur5lego)/launch/spawn_robot.launch">
-        <arg name="robot_name" value="$(arg robot_name)" />
-    </include>
+    <node name="homing_position_sender" pkg="ur5lego" type="ur5lego_move_server_wrapper"/>
 
     <!-- FIXME: così se ne può spawnare solo uno, se ne spawni di più sono tutti dell'ultimo tipo -->
-    <include file="$(find ur5lego)/launch/spawn_block.launch">
+    <!-- <include file="$(find ur5lego)/launch/spawn_block.launch">
         <arg name="block_type" value="X1-Y4-Z2" />
         <arg name="block_name" value="block1" />
         <arg name="spawn_x" value="0.2" />
         <arg name="spawn_y" value="0.7" />
-    </include>
+    </include> -->
 </launch>

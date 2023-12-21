@@ -9,15 +9,16 @@
 #include <actionlib/server/simple_action_server.h>
 #include <ur5lego/MoveAction.h>
 #include <string>
+#include <cstdlib>
 
 
 /// @brief action server that moves the robot
 class MoveAction
 {
 protected:
-    const std::string PACKAGE_NAME = "ur5lego";
-    const std::string UR_DESCRIPTION = "/robot_description/ur5.urdf";
-    const std::string PUBLISHING_CHANNEL = "/arm_joint_position";
+    std::string PACKAGE_NAME = "ur_description";
+    std::string UR_DESCRIPTION = "/urdf/ur5.urdf.xacro";
+    const std::string PUBLISHING_CHANNEL = "/ur5/joint_group_pos_controller/command";
 
     // node that acts as action server
     ros::NodeHandle server_node;
@@ -39,7 +40,9 @@ public:
     {
         publisher = talker_node.advertise<std_msgs::Float64MultiArray>(PUBLISHING_CHANNEL, 10);
 
-        const std::string urdf_file = ros::package::getPath(PACKAGE_NAME) + std::string(UR_DESCRIPTION);
+        // const std::string urdf_file = ros::package::getPath(PACKAGE_NAME) + std::string(UR_DESCRIPTION);
+        std::string urdf_file = std::string(std::getenv("LOCOSIM_DIR")) + "/robot_urdf/ur5.urdf";
+
         pinocchio::urdf::buildModel(urdf_file, model_);
         q = Eigen::VectorXd(6);
         q << -0.32, -0.78, -2.56, -1.63, -1.57, 3.49;   // homing position
