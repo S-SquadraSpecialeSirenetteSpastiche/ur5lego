@@ -16,8 +16,6 @@
 class MoveAction
 {
 protected:
-    std::string PACKAGE_NAME = "ur_description";
-    std::string UR_DESCRIPTION = "/urdf/ur5.urdf.xacro";
     const std::string PUBLISHING_CHANNEL = "/ur5/joint_group_pos_controller/command";
 
     // node that acts as action server
@@ -40,7 +38,8 @@ public:
     {
         publisher = talker_node.advertise<std_msgs::Float64MultiArray>(PUBLISHING_CHANNEL, 10);
 
-        // const std::string urdf_file = ros::package::getPath(PACKAGE_NAME) + std::string(UR_DESCRIPTION);
+        // TODO: decide wether it makes more sense to use /robot_urdf/generated_urdf/ur5.urdf or /robot_urdf/ur5.urdf
+        // they should be the same but the first one is generated from the xacro every time by ur5generic, the other one is static
         std::string urdf_file = std::string(std::getenv("LOCOSIM_DIR")) + "/robot_urdf/ur5.urdf";
 
         pinocchio::urdf::buildModel(urdf_file, model_);
