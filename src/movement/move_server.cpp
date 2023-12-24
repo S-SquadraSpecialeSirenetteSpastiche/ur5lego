@@ -16,7 +16,7 @@
 class MoveAction
 {
 protected:
-    const std::string PUBLISHING_CHANNEL = "/ur5/joint_group_pos_controller/command";
+    const std::string PUBLISHING_CHANNEL = "/arm_joint_position";
 
     // node that acts as action server
     ros::NodeHandle server_node;
