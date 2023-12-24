@@ -1,5 +1,6 @@
 #include "../include/inverse_kinematics.h"
 #include "../include/trajectory_planner.h"
+#include "../include/cache_handler.h"
 
 #include "pinocchio/parsers/urdf.hpp"
 #include "std_msgs/Float64MultiArray.h"
@@ -33,6 +34,9 @@ protected:
     pinocchio::Model model_;    // the model of the robot
     Eigen::VectorXd q;  // current configuration
 
+    Cache cache;
+    bool cache_enabled = true;
+
 public:
     MoveAction(std::string name) : action_server_(server_node, name, boost::bind(&MoveAction::executeCB, this, _1), false), action_name_(name)
     {
@@ -46,6 +50,12 @@ public:
         q = Eigen::VectorXd(6);
         q << -0.32, -0.78, -2.56, -1.63, -1.57, 3.49;   // homing position
 
+        cache = parse_cache(ros::package::getPath("ur5lego") + "/data/ik_cache.txt");
+        if (cache.empty()) {
+            ROS_WARN("Error while parsing cache file, continuing without");
+            cache_enabled = false;
+        }
+
         action_server_.start();
     }
 
@@ -54,18 +64,21 @@ public:
     }
 
     /// @brief callback for the action server
-    /// @param goal the goal sent by the client
-    void executeCB(const ur5lego::MoveGoalConstPtr &goal){
-        ROS_INFO_STREAM("Received goal: " << 
-            coordsToStr(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y) << " to do in " << goal->time << "s");
+    /// @param g the goal sent by the client
+    void executeCB(const ur5lego::MoveGoalConstPtr &g){
+        ROS_INFO_STREAM("Received goal: " << coordsToStr(g->X, g->Y, g->Z, g->r, g->p, g->y) << " to do in " << g->time << "s");
 
-        std::pair<Eigen::VectorXd, bool> res = inverse_kinematics(
-            model_, Eigen::Vector3d(goal->X, goal->Y, goal->Z), Eigen::Vector3d(goal->r, goal->p, goal->y), q);
+        std::pair<Eigen::VectorXd, bool> res;
+        if (cache_enabled) {
+            res = inverse_kinematics(model_, Eigen::Vector3d(g->X, g->Y, g->Z), Eigen::Vector3d(g->r, g->p, g->y), cache);
+        } else {
+            res = inverse_kinematics_without_cache(model_, Eigen::Vector3d(g->X, g->Y, g->Z), Eigen::Vector3d(g->r, g->p, g->y), q);
+        }
 
         if(res.second){
-            computeAndSendTrajectory(q, res.first, goal->time, 200, publisher);
+            computeAndSendTrajectory(q, res.first, g->time, 200, publisher);
             q = res.first;
-            ROS_INFO("Inverse kinematics succeded");
+            ROS_INFO_STREAM("Inverse kinematics succeded, q: " << q.transpose());
         } else {
             ROS_WARN("Inverse kinematics failed");
         }
