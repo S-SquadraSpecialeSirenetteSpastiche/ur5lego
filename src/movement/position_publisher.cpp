@@ -79,7 +79,7 @@ int main(int argc, char** argv){
     ros::init(argc, argv, "joint_position_publisher");
     ros::NodeHandle nh;
     ros::Publisher pub = nh.advertise<std_msgs::Float64MultiArray>("/ur5/joint_group_pos_controller/command", 10);
-    JointPositionPublisher joint_position_publisher(pub, nh, 6, 2);
+    JointPositionPublisher joint_position_publisher(nh, 6, 2);
     
     ros::spin();
     return 0;
