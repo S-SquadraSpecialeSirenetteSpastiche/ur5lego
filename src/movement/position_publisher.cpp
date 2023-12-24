@@ -4,6 +4,12 @@
 #include <std_msgs/Float64.h>
 
 
+/// @brief this class is a layer of abstraction to control the real and simulated robot 
+/// the same from the controller and the trajectory planner
+/// it works by subscribing to two topics: the position of the arm and the position of the gripper
+/// if the robot is simulated, when one of the two is updated, it sends Gazebo the updated joint vector,
+/// since both the joints and the gripper are treated as joints in Gazebo, 
+/// if the robot is real, it only serves as a wrapper for the gripper movement
 class JointPositionPublisher {
     public:
         JointPositionPublisher(ros::Publisher publisher, ros::NodeHandle nh, int joint_positions_size, int gripper_positions_size) {
