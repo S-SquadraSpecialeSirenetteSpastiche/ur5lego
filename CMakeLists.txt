@@ -13,12 +13,12 @@ find_package(catkin REQUIRED COMPONENTS
     actionlib
     gazebo_ros
     std_msgs
+    ros_impedance_controller
 )
 
 find_package(gazebo REQUIRED)
 
 link_directories(${GAZEBO_LIBRARY_DIRS})
-#list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}") #questo rompe tutto ancora di più
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 
 add_message_files(
@@ -32,7 +32,7 @@ add_action_files(
 )
 
 generate_messages(
-    DEPENDENCIES actionlib_msgs std_msgs  # Or other packages containing msgs
+    DEPENDENCIES actionlib_msgs std_msgs
 )
 
 catkin_package(
