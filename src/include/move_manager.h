@@ -8,6 +8,7 @@
 #include <ur5lego/GripperAction.h>
 #include "ur5lego/Pose.h"
 #include "queue"
+#include "Lego.h"
 
 class MoveManager {
     public:
