@@ -29,10 +29,10 @@ MoveManager::MoveManager(){
 
     fixed_pos.position.x = (_Float32)(0.3); //da sistemare
     fixed_pos.position.y = (_Float32)(0.3); //da sistemare
-    fixed_pos.position.z = (_Float32)(0.3); //da sistemare
-    fixed_pos.orientation.x = (_Float64)(1.5707); //da sistemare
-    fixed_pos.orientation.y = (_Float64)(-1.5707); //da sistemare
-    fixed_pos.orientation.z = (_Float64)(0); //da sistemare*/
+    fixed_pos.position.z = (_Float32)(0.40); //da sistemare
+    fixed_pos.orientation.x = (_Float64)(0);
+    fixed_pos.orientation.y = (_Float64)(-1.57);
+    fixed_pos.orientation.z = (_Float64)(1.57);
 
     homing.position.x = (_Float32)(-0.32); //da sistemare
     homing.position.y = (_Float32)(0.38); //da sistemare
@@ -92,11 +92,10 @@ void MoveManager::goalSender(ur5lego::MoveGoal & goal){
 
 void MoveManager::grab(ur5lego::GripperGoal goal, bool grab){
     if(grab){
-        goal.finger = 2.0;
+        goal.finger = 35.0;
     }else{
-        goal.finger = 0.0;
+        goal.finger = 70.0;
     }
-        goal.time = 3.0;
     ROS_INFO_STREAM("Gripper goal setted, ready to be sent.");
     gripper_client->sendGoal(goal);
 }
@@ -143,15 +142,15 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         goalSender(goal);
         
         //lower the brick -> da sistemare
-        goalSetter(fixed_pos.position.x, fixed_pos.position.y, fixed_pos.position.z+d, fixed_pos.orientation.x, fixed_pos.orientation.y, fixed_pos.orientation.z, goal);
+        goalSetter(fixed_pos.position.x, fixed_pos.position.y, (_Float64)(0.58), fixed_pos.orientation.x, fixed_pos.orientation.y, fixed_pos.orientation.z, goal);
         goalSender(goal);
+        grab(hand, false);
 
         //return to homing position
         goalSetter(homing, goal);
         goalSender(goal);
         //
         //fixed_pos.position.y = fixed_pos.position.y-0.1;
-        grab(hand, false);
 
         
         pos_msgs.pop();

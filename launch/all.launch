@@ -12,7 +12,9 @@
     <!-- start the move server and its wrapper-->
     <node name="move_server" pkg="ur5lego" type="ur5lego_move_server"/>
     <node name="move_server_wrapper" pkg="ur5lego" type="ur5lego_move_server_wrapper"/>
-
+    <!-- start the gripepr server -->
+    <node name="gripper_server" pkg="ur5lego" type="ur5lego_gripper_server"/>
+    
     <!-- start the position publisher -->
     <node name="position_publisher" pkg="ur5lego" type="ur5lego_position_publisher"/>
 
