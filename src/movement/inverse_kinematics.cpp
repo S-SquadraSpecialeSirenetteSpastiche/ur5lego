@@ -1,4 +1,5 @@
 #include "../include/inverse_kinematics.h"
+#include <ros/ros.h>
 
 
 /// @brief computes the inverse kinematics of a 6DOF robot
@@ -7,7 +8,7 @@
 /// @param target_orientation_rpy   the desired orientation of the end effector, in roll pitch yaw representation
 /// @param q0                   the initial guess for the inverse kinematics
 /// @return a pair containing the solution of the inverse kinematics and a boolean value indicating if the algorithm was successful
-std::pair<Eigen::VectorXd, bool> inverse_kinematics(
+std::pair<Eigen::VectorXd, bool> inverse_kinematics_without_cache(
     pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Eigen::VectorXd q0){
 
     pinocchio::Data data(model);
@@ -42,6 +43,17 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
     }
 
     return std::make_pair(q, true);
+}
+
+
+std::pair<Eigen::VectorXd, bool> inverse_kinematics(
+    pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Cache cache){
+    
+    Eigen::VectorXd q = find_closest(cache, target_position[0], target_position[1], target_position[2]);
+    ROS_INFO_STREAM("Closest q: " << q.transpose());
+    std::pair<Eigen::VectorXd, bool> ikresult = inverse_kinematics_(model, target_position, target_orientation_rpy, q);
+
+    return ikresult;
 }
 
 

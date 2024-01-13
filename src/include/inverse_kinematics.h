@@ -6,9 +6,13 @@
 #include "pinocchio/algorithm/compute-all-terms.hpp"
 #include "pinocchio/math/rpy.hpp"
 #include "math_tools.h"
+#include "cache_handler.h"
 
 
 std::pair<Eigen::VectorXd, bool> inverse_kinematics(pinocchio::Model model, Eigen::Vector3d target_position, 
+    Eigen::Vector3d target_rotation, Cache cache);
+
+std::pair<Eigen::VectorXd, bool> inverse_kinematics_without_cache(pinocchio::Model model, Eigen::Vector3d target_position, 
     Eigen::Vector3d target_rotation, Eigen::VectorXd q0);
 
 std::pair<Eigen::VectorXd, bool> inverse_kinematics_(

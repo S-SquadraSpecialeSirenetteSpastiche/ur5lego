@@ -1,5 +1,6 @@
 #include "../include/inverse_kinematics.h"
 #include "../include/trajectory_planner.h"
+#include "../include/cache_handler.h"
 
 #include "pinocchio/parsers/urdf.hpp"
 #include "std_msgs/Float64MultiArray.h"
@@ -9,6 +10,7 @@
 #include <actionlib/server/simple_action_server.h>
 #include <ur5lego/MoveAction.h>
 #include <string>
+#include <cstdlib>
 
 
 
@@ -16,9 +18,7 @@
 class MoveAction
 {
 protected:
-    const std::string PACKAGE_NAME = "ur5lego";
-    const std::string UR_DESCRIPTION = "/robot_description/ur5.urdf";
-    const std::string PUBLISHING_CHANNEL = "ur5/joint_group_position_controller/command";
+    const std::string PUBLISHING_CHANNEL = "/arm_joint_position";
 
     // node that acts as action server
     ros::NodeHandle server_node;
@@ -35,15 +35,27 @@ protected:
     
     pinocchio::Model model_;    // the model of the robot
 
+    Cache cache;
+    bool cache_enabled = true;
+
 public:
     MoveAction(std::string name) : action_server_(server_node, name, boost::bind(&MoveAction::executeCB, this, _1), false), action_name_(name)
     {
         publisher = talker_node.advertise<std_msgs::Float64MultiArray>(PUBLISHING_CHANNEL, 10);
 
-        const std::string urdf_file = ros::package::getPath(PACKAGE_NAME) + std::string(UR_DESCRIPTION);
+        // TODO: decide wether it makes more sense to use /robot_urdf/generated_urdf/ur5.urdf or /robot_urdf/ur5.urdf
+        // they should be the same but the first one is generated from the xacro every time by ur5generic, the other one is static
+        std::string urdf_file = std::string(std::getenv("LOCOSIM_DIR")) + "/robot_urdf/ur5.urdf";
+
         pinocchio::urdf::buildModel(urdf_file, model_);
         q = Eigen::VectorXd(6);
         q << -0.32, -0.78, -2.56, -1.63, -1.57, 3.49;   // homing position
+
+        cache = parse_cache(ros::package::getPath("ur5lego") + "/data/ik_cache.txt");
+        if (cache.empty()) {
+            ROS_WARN("Error while parsing cache file, continuing without");
+            cache_enabled = false;
+        }
 
         action_server_.start();
     }
@@ -53,20 +65,21 @@ public:
     }
 
     /// @brief callback for the action server
-    /// @param goal the goal sent by the client
-    void executeCB(const ur5lego::MoveGoalConstPtr &goal){
-        ROS_INFO_STREAM("Received goal: " << 
-            coordsToStr(goal->X, goal->Y, goal->Z, goal->r, goal->p, goal->y) << " to do in " << goal->time << "s");
-        ROS_INFO("Executing inverse kinematics.");
-        std::pair<Eigen::VectorXd, bool> res = inverse_kinematics(
-            model_, Eigen::Vector3d(goal->X, goal->Y, goal->Z), Eigen::Vector3d(goal->r, goal->p, goal->y), q);
-        
-        if(res.second){
-            ROS_INFO("Inverse kinematics succeded");
-            computeAndSendTrajectory(q, res.first, goal->time, 200, publisher);
-            ROS_INFO("Trajectory sent.");
-            q = res.first;
+    /// @param g the goal sent by the client
+    void executeCB(const ur5lego::MoveGoalConstPtr &g){
+        ROS_INFO_STREAM("Received goal: " << coordsToStr(g->X, g->Y, g->Z, g->r, g->p, g->y) << " to do in " << g->time << "s");
 
+        std::pair<Eigen::VectorXd, bool> res;
+        if (cache_enabled) {
+            res = inverse_kinematics(model_, Eigen::Vector3d(g->X, g->Y, g->Z), Eigen::Vector3d(g->r, g->p, g->y), cache);
+        } else {
+            res = inverse_kinematics_without_cache(model_, Eigen::Vector3d(g->X, g->Y, g->Z), Eigen::Vector3d(g->r, g->p, g->y), q);
+        }
+
+        if(res.second){
+            computeAndSendTrajectory(q, res.first, g->time, 200, publisher);
+            q = res.first;
+            ROS_INFO_STREAM("Inverse kinematics succeded, q: " << q.transpose());
         } else {
             ROS_WARN("Inverse kinematics failed");
         }

@@ -3,8 +3,8 @@
 <launch>
     <arg name="block_type" />
     <arg name="block_name" />
-    <arg name="spawn_x" default="0.5" />
-	<arg name="spawn_y" default="0.35" />
+    <arg name="spawn_x" default="0.2" />
+	<arg name="spawn_y" default="0.5" />
 	<arg name="spawn_z" default="1" />
 
     <!-- sends block XML to parameter server -->

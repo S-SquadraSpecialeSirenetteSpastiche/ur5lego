@@ -13,12 +13,12 @@ find_package(catkin REQUIRED COMPONENTS
     actionlib
     gazebo_ros
     std_msgs
+    ros_impedance_controller
 )
 
 find_package(gazebo REQUIRED)
 
 link_directories(${GAZEBO_LIBRARY_DIRS})
-#list(APPEND CMAKE_CXX_FLAGS "${GAZEBO_CXX_FLAGS}") #questo rompe tutto ancora di più
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 
 add_message_files(
@@ -53,9 +53,11 @@ add_library(inverse_kinematics src/movement/inverse_kinematics.cpp)
 add_library(trajectory src/movement/trajectory_planner.cpp)
 add_library(link_controller_plugin SHARED  src/link_controller_plugin.cpp)
 add_library(ur5lego_move_manager STATIC src/move_manager.cpp)
+add_library(cache_handler src/movement/cache_handler.cpp)
 
 target_link_libraries(trajectory ${catkin_LIBRARIES} math inverse_kinematics)
 target_link_libraries(link_controller_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
+target_link_libraries(inverse_kinematics ${catkin_LIBRARIES} math cache_handler)
 
 
 add_executable(ur5lego_move_server src/movement/move_server.cpp)
@@ -64,7 +66,7 @@ add_executable(ur5lego_move_server_wrapper src/movement/move_server_wrapper.cpp)
 add_executable(ur5lego_position_publisher src/movement/position_publisher.cpp)
 add_executable(ur5lego_gripper_server src/movement/gripper_server.cpp)
 
-target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES} pinocchio::pinocchio inverse_kinematics math trajectory)
+target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES} pinocchio::pinocchio inverse_kinematics math trajectory cache_handler)
 target_link_libraries(ur5lego_send_homing_position ${catkin_LIBRARIES} trajectory)
 target_link_libraries(ur5lego_move_server_wrapper ${catkin_LIBRARIES})
 target_link_libraries(ur5lego_position_publisher ${catkin_LIBRARIES})
