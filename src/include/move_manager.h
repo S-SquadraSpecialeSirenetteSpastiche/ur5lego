@@ -16,7 +16,7 @@ class MoveManager {
     ros::Subscriber test_position;
    
     int height;
-    _Float32 d = 0.3;
+    _Float32 d = 0.15;
     ur5lego::Pose fixed_pos;
     ur5lego::Pose homing;
 
