@@ -37,6 +37,8 @@ protected:
     Cache cache;
     bool cache_enabled = true;
 
+    const float DT = 100;
+
 public:
     MoveAction(std::string name) : action_server_(server_node, name, boost::bind(&MoveAction::executeCB, this, _1), false), action_name_(name)
     {
@@ -76,9 +78,9 @@ public:
         }
 
         if(res.second){
-            computeAndSendTrajectory(q, res.first, g->time, 200, publisher);
+            ROS_INFO_STREAM("Inverse kinematics succeded, q: " << res.first.transpose());
+            compute_and_send_trajectory(q, res.first, g->time, DT, publisher);
             q = res.first;
-            ROS_INFO_STREAM("Inverse kinematics succeded, q: " << q.transpose());
         } else {
             ROS_WARN("Inverse kinematics failed");
         }

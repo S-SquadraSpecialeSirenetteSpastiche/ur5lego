@@ -5,4 +5,4 @@
 
 void send_joint_positions(ros::Publisher publisher, Eigen::VectorXd q);
 
-void computeAndSendTrajectory(Eigen::VectorXd q, Eigen::VectorXd qf, float t, int steps, ros::Publisher publisher);
+void compute_and_send_trajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float tf, float freq, ros::Publisher publisher);

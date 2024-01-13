@@ -18,7 +18,7 @@ void clockCallback(const rosgraph_msgs::Clock::ConstPtr& msg)
         done = true;
         Eigen::VectorXd q0(6);
         q0 << -0.32, -0.78, -2.56, -1.63, -1.57, 3.49;
-        computeAndSendTrajectory(Eigen::VectorXd::Zero(6), q0, 5.0, 100, pub);
+        compute_and_send_trajectory(Eigen::VectorXd::Zero(6), q0, 5.0, 100, pub);
     }
 }
 
