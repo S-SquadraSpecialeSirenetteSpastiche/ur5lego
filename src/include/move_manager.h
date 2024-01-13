@@ -8,7 +8,6 @@
 #include <ur5lego/GripperAction.h>
 #include "ur5lego/Pose.h"
 #include "queue"
-#include "Lego.h"
 
 class MoveManager {
     public:
@@ -20,7 +19,23 @@ class MoveManager {
     _Float32 d = 0.3;
     ur5lego::Pose fixed_pos;
     ur5lego::Pose homing;
-    
+
+    enum Lego{
+        X1_Y1_Z2,
+        X1_Y2_Z1,
+        X1_Y2_Z2,
+        X1_Y2_Z2_CHAMFER,
+        X1_Y2_Z2_TWINFILLET,
+        X1_Y3_Z2,
+        X1_Y3_Z2_FILLET,
+        X1_Y4_Z1,
+        X1_Y4_Z2,
+        X2_Y2_Z2,
+        X2_Y2_Z2_FILLET,
+    };
+
+    ur5lego::Pose * position_list;
+
     MoveManager();
     void goalSetter(_Float32 X, _Float32 Y, _Float32 Z, _Float64 r, _Float64 p, _Float64 y, ur5lego::MoveGoal & goal);
     void goalSetter(ur5lego::Pose msg, ur5lego::MoveGoal & goal);

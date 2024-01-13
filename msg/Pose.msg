@@ -1,3 +1,3 @@
-string legoType
+uint32 legoType
 geometry_msgs/Point position
 geometry_msgs/Vector3 orientation

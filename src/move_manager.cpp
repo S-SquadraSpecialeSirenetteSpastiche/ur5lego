@@ -40,6 +40,20 @@ MoveManager::MoveManager(){
     homing.orientation.x = (_Float64)(1.5707); //da sistemare
     homing.orientation.y = (_Float64)(-1.5707); //da sistemare
     homing.orientation.z = (_Float64)(0); //da sistemare*/
+
+    position_list = new ur5lego::Pose[11];
+    position_list[X1_Y1_Z2] = fixed_pos;
+    position_list[X1_Y2_Z1] = fixed_pos;
+    position_list[X1_Y2_Z2] = fixed_pos;
+    position_list[X1_Y2_Z2_CHAMFER] = fixed_pos;
+    position_list[X1_Y2_Z2_TWINFILLET] = fixed_pos;
+    position_list[X1_Y3_Z2] = fixed_pos;
+    position_list[X1_Y3_Z2_FILLET] = fixed_pos;
+    position_list[X1_Y4_Z1] = fixed_pos;
+    position_list[X1_Y4_Z2] = fixed_pos;
+    position_list[X2_Y2_Z2] = fixed_pos;
+    position_list[X2_Y2_Z2_FILLET] = fixed_pos;
+    
 }   
 
 void MoveManager::goalSetter(_Float32 X, _Float32 Y, _Float32 Z, _Float64 r, _Float64 p, _Float64 y, ur5lego::MoveGoal & goal){
@@ -109,6 +123,49 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         ur5lego::MoveGoal goal;
         ur5lego::GripperGoal hand;
         
+        int block_code = msg->legoType;
+        Lego lego_type;
+        switch (block_code)
+        {
+        case X1_Y1_Z2:
+            lego_type = X1_Y1_Z2;
+            break;
+        case X1_Y2_Z1:
+            lego_type = X1_Y2_Z1;
+            break;
+        case X1_Y2_Z2:
+            lego_type = X1_Y2_Z2;
+            break;
+        case X1_Y2_Z2_CHAMFER:
+            lego_type = X1_Y2_Z2_CHAMFER;
+            break;
+        case X1_Y2_Z2_TWINFILLET:
+            lego_type = X1_Y2_Z2_TWINFILLET;
+            break;
+        case X1_Y3_Z2:
+            lego_type = X1_Y3_Z2;
+            break;
+        case X1_Y3_Z2_FILLET:
+            lego_type = X1_Y3_Z2_FILLET;
+            break;
+        case X1_Y4_Z1:
+            lego_type = X1_Y4_Z1;
+            break;
+        case X1_Y4_Z2:
+            lego_type = X1_Y4_Z2;
+            break;
+        case X2_Y2_Z2:
+            lego_type = X2_Y2_Z2;
+            break;
+        case X2_Y2_Z2_FILLET:
+            lego_type = X2_Y2_Z2_FILLET;
+            break;
+        default:
+            ROS_INFO_STREAM("Lego type not found");
+            lego_type = X1_Y1_Z2;
+            break;
+        }  
+
         //save position
         _Float32 X = msg->position.x;
         _Float32 Y = msg->position.y;
@@ -121,6 +178,13 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
 
         ROS_INFO("dati ricevuti: X:%f ,Y:%f , Z:%f",X, Y, Z );
         
+        /*
+        the following block of code is used to move the robot to the position
+        where the brick is located. The robot will move above the brick, then
+        it will descend and grab the brick, then it will lift the brick and
+        move it to the fixed position, then it will lower the brick and release
+        it. Finally, it will return to the homing position.
+        */
         //move above the object
         goalSetter(X,Y,Z-d,r,p,y, goal);
         goalSender(goal);
@@ -128,29 +192,32 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         //descend and grab the object
         goalSetter(X,Y,Z,r,p,y, goal);
         goalSender(goal);
-        //grab(true) -> is an action! not implemented yet
         grab(hand, true);
 
         
         //lift the brick
         goalSetter(X,Y,Z-d,r,p,y, goal);
         goalSender(goal);
-        //TODO: GRAB
         
         //move the brick to fixed_pos
-        goalSetter(fixed_pos, goal);
+        goalSetter(position_list[lego_type], goal);
         goalSender(goal);
         
-        //lower the brick -> da sistemare
-        goalSetter(fixed_pos.position.x, fixed_pos.position.y, (_Float64)(0.58), fixed_pos.orientation.x, fixed_pos.orientation.y, fixed_pos.orientation.z, goal);
+        //lower the brick
+        goalSetter(position_list[lego_type].position.x,
+                     position_list[lego_type].position.y, 
+                     position_list[lego_type].position.z + d, //lower brick
+                     position_list[lego_type].orientation.x, 
+                     position_list[lego_type].orientation.y, 
+                     position_list[lego_type].orientation.z, 
+                     goal);
         goalSender(goal);
-        grab(hand, false);
+        grab(hand, false); //release the brick
 
         //return to homing position
         goalSetter(homing, goal);
         goalSender(goal);
-        //
-        //fixed_pos.position.y = fixed_pos.position.y-0.1;
+        //end action
 
         
         pos_msgs.pop();
