@@ -13,6 +13,7 @@
 #include <cstdlib>
 
 
+
 /// @brief action server that moves the robot
 class MoveAction
 {
@@ -30,9 +31,9 @@ protected:
     // create messages that are used to published feedback/result
     ur5lego::MoveFeedback feedback_;
     ur5lego::MoveResult result_;
+    Eigen::VectorXd q;  // current configuration of arms    
     
     pinocchio::Model model_;    // the model of the robot
-    Eigen::VectorXd q;  // current configuration
 
     Cache cache;
     bool cache_enabled = true;
@@ -85,7 +86,7 @@ public:
 
         result_.success = res.second;
         action_server_.setSucceeded(result_);
-    }
+    }    
 
 private: 
     /// @brief converts the coordinates to a string
@@ -94,16 +95,16 @@ private:
         ss << std::fixed << std::setprecision(2);
         ss << "(" <<  X << ", " << Y << ", " << Z << ") (" << r << ", " << p << ", " << y << ")";
         return ss.str();
-    }
+    } 
 };
-
 
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "move_server");
 
     MoveAction moveAction("move_server");
-    ROS_INFO_STREAM("Server ready");
+
+    ROS_INFO_STREAM("Move server ready.");
 
     ros::spin();
 
