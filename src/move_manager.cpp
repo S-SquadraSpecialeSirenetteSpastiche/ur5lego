@@ -68,9 +68,6 @@ void MoveManager::goalSetter(_Float32 X, _Float32 Y, _Float32 Z, _Float64 r, _Fl
     goal.p = p;
     goal.y = y;
     goal.time = 3.0;
-    ROS_INFO("Action:   Coordinates: %f, %f, %f", goal.X, goal.Y, goal.Z);
-
-    ROS_INFO_STREAM("Goal setted, ready to be sent\n");
 }
 
 void MoveManager::goalSetter(ur5lego::Pose msg, ur5lego::MoveGoal & goal){
@@ -83,14 +80,10 @@ void MoveManager::goalSetter(ur5lego::Pose msg, ur5lego::MoveGoal & goal){
     goal.p = msg.orientation.y;
     goal.y = msg.orientation.z;
     goal.time = 3.0;
-    ROS_INFO_STREAM("Y  nellla  funzione: "<<goal.Y);
-
-    ROS_INFO_STREAM("Goal setted, ready to be sent\n");
 }
  
 void MoveManager::goalSender(ur5lego::MoveGoal & goal){
     move_client->sendGoal(goal);
-    ROS_INFO("Goal sent");
     bool finished_before_timeout = move_client->waitForResult(ros::Duration(30.0));
     if (finished_before_timeout)
     {
@@ -136,7 +129,7 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         _Float64 p = msg->orientation.y;
         _Float64 y = msg->orientation.z;
 
-        ROS_INFO("dati ricevuti: X:%f ,Y:%f , Z:%f",X, Y, Z );
+        ROS_INFO("Posizione blocco: X:%f ,Y:%f , Z:%f", X, Y, Z );
         
         /*
         the following block of code is used to move the robot to the position
