@@ -125,6 +125,7 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         
         Lego lego_type = static_cast<Lego>(msg->legoType);
 
+
         //save position
         _Float32 X = msg->position.x;
         _Float32 Y = msg->position.y;
