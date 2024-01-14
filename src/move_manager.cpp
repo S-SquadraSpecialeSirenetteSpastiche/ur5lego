@@ -34,6 +34,7 @@ MoveManager::MoveManager(){
     fixed_pos.orientation.y = (_Float64)(-1.57);
     fixed_pos.orientation.z = (_Float64)(1.57);
 
+    // Fre: queste non sono le coordinate della homing position del robot
     homing.position.x = (_Float32)(-0.32); //da sistemare
     homing.position.y = (_Float32)(0.38); //da sistemare
     homing.position.z = (_Float32)(0.2); //da sistemare
@@ -86,8 +87,7 @@ void MoveManager::goalSetter(ur5lego::Pose msg, ur5lego::MoveGoal & goal){
 
     ROS_INFO_STREAM("Goal setted, ready to be sent\n");
 }
-
-
+ 
 void MoveManager::goalSender(ur5lego::MoveGoal & goal){
     move_client->sendGoal(goal);
     ROS_INFO("Goal sent");
@@ -123,48 +123,7 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         ur5lego::MoveGoal goal;
         ur5lego::GripperGoal hand;
         
-        int block_code = msg->legoType;
-        Lego lego_type;
-        switch (block_code)
-        {
-        case X1_Y1_Z2:
-            lego_type = X1_Y1_Z2;
-            break;
-        case X1_Y2_Z1:
-            lego_type = X1_Y2_Z1;
-            break;
-        case X1_Y2_Z2:
-            lego_type = X1_Y2_Z2;
-            break;
-        case X1_Y2_Z2_CHAMFER:
-            lego_type = X1_Y2_Z2_CHAMFER;
-            break;
-        case X1_Y2_Z2_TWINFILLET:
-            lego_type = X1_Y2_Z2_TWINFILLET;
-            break;
-        case X1_Y3_Z2:
-            lego_type = X1_Y3_Z2;
-            break;
-        case X1_Y3_Z2_FILLET:
-            lego_type = X1_Y3_Z2_FILLET;
-            break;
-        case X1_Y4_Z1:
-            lego_type = X1_Y4_Z1;
-            break;
-        case X1_Y4_Z2:
-            lego_type = X1_Y4_Z2;
-            break;
-        case X2_Y2_Z2:
-            lego_type = X2_Y2_Z2;
-            break;
-        case X2_Y2_Z2_FILLET:
-            lego_type = X2_Y2_Z2_FILLET;
-            break;
-        default:
-            ROS_INFO_STREAM("Lego type not found");
-            lego_type = X1_Y1_Z2;
-            break;
-        }  
+        Lego lego_type = static_cast<Lego>(msg->legoType);
 
         //save position
         _Float32 X = msg->position.x;
