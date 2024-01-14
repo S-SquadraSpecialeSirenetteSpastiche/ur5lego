@@ -34,7 +34,6 @@ MoveManager::MoveManager(){
     fixed_pos.orientation.y = (_Float64)(-1.57);
     fixed_pos.orientation.z = (_Float64)(1.57);
 
-    // Fre: queste non sono le coordinate della homing position del robot
     homing.position.x = (_Float32)(-0.32); //da sistemare
     homing.position.y = (_Float32)(0.38); //da sistemare
     homing.position.z = (_Float32)(0.2); //da sistemare
@@ -56,6 +55,46 @@ MoveManager::MoveManager(){
     position_list[X2_Y2_Z2_FILLET] = fixed_pos;
     
 }   
+
+/// @brief this function converts the coordinates of the brick from the camera frame to the robot frame
+/// @param msg the message containing the coordinates of the brick in the camera frame
+/// @return converted_msg the message containing the coordinates of the brick in the robot
+ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
+    ur5lego::Pose converted_msg;
+    ROS_INFO("Converting Camera coordinates to Robot coordinates");
+    Eigen::Vector3d T; //translation vector
+    T << 0.5, 0.3, 0.6;
+    Eigen::Matrix4d M; //roto-translation matrix
+    M << 0, -1, 0, T[0],
+            1, 0, 0, T[1],
+            0, 0, -1, T[2],
+            0, 0, 0, 1;
+
+    Eigen::Matrix3d R; //rotation matrix
+    R << 0, -1, 0,
+            1, 0, 0,
+            0, 0, -1;
+    Eigen::Vector4d camera_pov_coordinates;
+    Eigen::Vector3d camera_pov_orientation; 
+    Eigen::Vector4d robot_pov_coordinates;
+    Eigen::Vector3d robot_pov_orientation;
+
+    camera_pov_coordinates << msg->position.x, msg->position.y, msg->position.z, 1;
+    camera_pov_orientation << msg->orientation.x, msg->orientation.y, msg->orientation.z;
+
+    robot_pov_coordinates = M * camera_pov_coordinates;
+    robot_pov_orientation = R * camera_pov_orientation;
+
+    converted_msg.legoType = msg->legoType;
+    converted_msg.position.x = (_Float32)(robot_pov_coordinates[0]);
+    converted_msg.position.y = (_Float32)(robot_pov_coordinates[1]);
+    converted_msg.position.z = (_Float32)(robot_pov_coordinates[2]);
+    converted_msg.orientation.x = (_Float64)(robot_pov_orientation[0]);
+    converted_msg.orientation.y = (_Float64)(robot_pov_orientation[1]);
+    converted_msg.orientation.z = (_Float64)(robot_pov_orientation[2]);
+
+    return converted_msg;
+}
 
 void MoveManager::goalSetter(_Float32 X, _Float32 Y, _Float32 Z, _Float64 r, _Float64 p, _Float64 y, ur5lego::MoveGoal & goal){
     //save position
@@ -112,22 +151,22 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
 
     //start action
     if(!pos_msgs.empty()){
-        ur5lego::Pose::ConstPtr msg = pos_msgs.front();
+        ur5lego::Pose msg = positionConverter(pos_msgs.front());
         ur5lego::MoveGoal goal;
         ur5lego::GripperGoal hand;
         
-        Lego lego_type = static_cast<Lego>(msg->legoType);
+        Lego lego_type = static_cast<Lego>(msg.legoType);
 
 
         //save position
-        _Float32 X = msg->position.x;
-        _Float32 Y = msg->position.y;
-        _Float32 Z = msg->position.z;
+        _Float32 X = msg.position.x;
+        _Float32 Y = msg.position.y;
+        _Float32 Z = msg.position.z;
         std::cout << X << Y << Z;
         //save orientation
-        _Float64 r = msg->orientation.x;
-        _Float64 p = msg->orientation.y;
-        _Float64 y = msg->orientation.z;
+        _Float64 r = msg.orientation.x;
+        _Float64 p = msg.orientation.y;
+        _Float64 y = msg.orientation.z;
 
         ROS_INFO("Posizione blocco: X:%f ,Y:%f , Z:%f", X, Y, Z );
         
@@ -166,6 +205,9 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
                      goal);
         goalSender(goal);
         grab(hand, false); //release the brick
+
+        goalSetter(position_list[lego_type], goal);
+        goalSender(goal);
 
         //return to homing position
         goalSetter(homing, goal);

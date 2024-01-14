@@ -1,5 +1,4 @@
 #include "ros/ros.h"
-//#include "Lego.h"
 #include "include/move_manager.h"
 #include "queue"
 #include "ur5lego/Pose.h"
@@ -13,7 +12,8 @@ void positionCallback(const ur5lego::Pose::ConstPtr & msg){
     pos_msgs.push(msg);
 }
 
-int main(int argc, char **argv){
+int main(int argc, char **argv
+){
 
     init(argc, argv, "listener");
     MoveManager mg;
@@ -25,9 +25,9 @@ int main(int argc, char **argv){
 
 
     while(ok()){
-    mg.actionPlanner(pos_msgs);
+        mg.actionPlanner(pos_msgs);
 
-    ros::spinOnce();
+        ros::spinOnce();
     }
 
     //exit

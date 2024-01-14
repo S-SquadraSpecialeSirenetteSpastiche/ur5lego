@@ -1,0 +1,7 @@
+<launch>
+    <node name="rqt_console" pkg="rqt_console" type="rqt_console"/>
+    <include file="$(find ur5lego)/launch/inverse_kinematics.launch"></include>
+    <node name="gripper_server" pkg="ur5lego" type="ur5lego_gripper_server"/>
+    <node name="move_publisher" pkg="ur5lego" type="ur5lego_move_publisher"/>
+    <node name="move_subscriber" pkg="ur5lego" type="ur5lego_move_subscriber"/>
+</launch>

@@ -7,6 +7,7 @@
 #include <ur5lego/MoveAction.h>
 #include <ur5lego/GripperAction.h>
 #include "ur5lego/Pose.h"
+#include "Eigen/Dense"
 #include "queue"
 
 class MoveManager {
@@ -37,6 +38,7 @@ class MoveManager {
     ur5lego::Pose * position_list;
 
     MoveManager();
+    ur5lego::Pose positionConverter(ur5lego::Pose::ConstPtr msg);
     void goalSetter(_Float32 X, _Float32 Y, _Float32 Z, _Float64 r, _Float64 p, _Float64 y, ur5lego::MoveGoal & goal);
     void goalSetter(ur5lego::Pose msg, ur5lego::MoveGoal & goal);
     void goalSender(ur5lego::MoveGoal & goal);

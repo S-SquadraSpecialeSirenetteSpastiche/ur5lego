@@ -12,10 +12,12 @@ using namespace std;
 queue<ur5lego::Pose::ConstPtr> camera_pos_msgs;
 
 void cameraCallback(const ur5lego::Pose::ConstPtr & msg){
-    std::cout << "I received the message from camera!" << std::endl;
-    ROS_INFO("I received the message from camera!");
-    camera_pos_msgs.push(msg);
+  std::cout << "I received the message from camera!" << std::endl;
+  ROS_INFO("I received the message from camera!");
+  camera_pos_msgs.push(msg);
 }
+
+
 
 int main(int argc, char **argv){
 
@@ -35,9 +37,9 @@ int main(int argc, char **argv){
   {
     
     if(!camera_pos_msgs.empty()){
-      ur5lego::Pose msg;
-      msg = *camera_pos_msgs.front();
-      ROS_INFO("X:%f, Y:%f, Z:%f", msg.position.x, msg.position.y, msg.position.z);
+      ur5lego::Pose::ConstPtr msg;
+      msg = camera_pos_msgs.front();
+      ROS_INFO("X:%f, Y:%f, Z:%f", msg->position.x, msg->position.y, msg->position.z);
       chatter_pub.publish(msg);
       camera_pos_msgs.pop();
     }
