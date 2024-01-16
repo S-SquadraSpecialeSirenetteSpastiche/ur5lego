@@ -24,9 +24,6 @@ MoveManager::MoveManager(){
     gripper_client->waitForServer();
     ROS_INFO("Gripper server started.");
 
-    //NodeHandle nh;
-    height = 1; //da sistemare;
-
     fixed_pos.position.x = (_Float32)(0.3); //da sistemare
     fixed_pos.position.y = (_Float32)(0.3); //da sistemare
     fixed_pos.position.z = (_Float32)(0.40); //da sistemare
@@ -41,6 +38,7 @@ MoveManager::MoveManager(){
     homing.orientation.y = (_Float64)(-1.5707); //da sistemare
     homing.orientation.z = (_Float64)(0); //da sistemare*/
 
+    ///positions where each type of lego should be moved to
     position_list = new ur5lego::Pose[11];
     position_list[X1_Y1_Z2] = fixed_pos;
     position_list[X1_Y2_Z1] = fixed_pos;
@@ -53,7 +51,7 @@ MoveManager::MoveManager(){
     position_list[X1_Y4_Z2] = fixed_pos;
     position_list[X2_Y2_Z2] = fixed_pos;
     position_list[X2_Y2_Z2_FILLET] = fixed_pos;
-    
+
 }   
 
 /// @brief this function converts the coordinates of the brick from the camera frame to the robot frame
@@ -66,32 +64,50 @@ ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
     T << 0.5, 0.3, 0.6;
     Eigen::Matrix4d M; //roto-translation matrix
     M << 0, -1, 0, T[0],
-            1, 0, 0, T[1],
+            -1, 0, 0, T[1],
             0, 0, -1, T[2],
             0, 0, 0, 1;
 
-    Eigen::Matrix3d R; //rotation matrix
+    Eigen::Matrix3d R; //rotation matrix rpy
     R << 0, -1, 0,
-            1, 0, 0,
+            -1, 0, 0,
             0, 0, -1;
     Eigen::Vector4d camera_pov_coordinates;
     Eigen::Vector3d camera_pov_orientation; 
     Eigen::Vector4d robot_pov_coordinates;
-    Eigen::Vector3d robot_pov_orientation;
 
     camera_pov_coordinates << msg->position.x, msg->position.y, msg->position.z, 1;
     camera_pov_orientation << msg->orientation.x, msg->orientation.y, msg->orientation.z;
 
+    Eigen::Matrix3d roll_matrix;
+    roll_matrix << 1, 0, 0,
+                    0, cos(msg->orientation.x), -sin(msg->orientation.x),
+                    0, sin(msg->orientation.x), cos(msg->orientation.x);
+
+    Eigen::Matrix3d pitch_matrix;
+    pitch_matrix << cos(msg->orientation.y), 0, sin(msg->orientation.y),
+                    0, 1, 0,
+                    -sin(msg->orientation.y), 0, cos(msg->orientation.y);
+    Eigen::Matrix3d yaw_matrix;
+    yaw_matrix << cos(msg->orientation.z), -sin(msg->orientation.z), 0,
+                    sin(msg->orientation.z), cos(msg->orientation.z), 0,
+                    0, 0, 1;
+    Eigen::Matrix3d RPY = roll_matrix * pitch_matrix * yaw_matrix;
+
     robot_pov_coordinates = M * camera_pov_coordinates;
-    robot_pov_orientation = R * camera_pov_orientation;
+    Eigen::Matrix3d rotated_rpy = R * RPY;
+
+    double roll = 0; //atan2(rotated_rpy(2,1), rotated_rpy(2,2));
+    double pitch = -1.57; //atan2(-rotated_rpy(2,0), sqrt(pow(rotated_rpy(2,1),2) + pow(rotated_rpy(2,2),2)));
+    double yaw = 1.57; //atan2(rotated_rpy(1,0), rotated_rpy(0,0));
 
     converted_msg.legoType = msg->legoType;
     converted_msg.position.x = (_Float32)(robot_pov_coordinates[0]);
     converted_msg.position.y = (_Float32)(robot_pov_coordinates[1]);
-    converted_msg.position.z = (_Float32)(robot_pov_coordinates[2]);
-    converted_msg.orientation.x = (_Float64)(robot_pov_orientation[0]);
-    converted_msg.orientation.y = (_Float64)(robot_pov_orientation[1]);
-    converted_msg.orientation.z = (_Float64)(robot_pov_orientation[2]);
+    converted_msg.position.z = (_Float32)(robot_pov_coordinates[2] - height);
+    converted_msg.orientation.x = (_Float64)(roll);
+    converted_msg.orientation.y = (_Float64)(pitch);
+    converted_msg.orientation.z = (_Float64)(yaw);
 
     return converted_msg;
 }
@@ -142,6 +158,7 @@ void MoveManager::grab(ur5lego::GripperGoal goal, bool grab){
     }else{
         goal.finger = 70.0;
     }
+    goal.time = 1.0;
     ROS_INFO_STREAM("Gripper goal setted, ready to be sent.");
     gripper_client->sendGoal(goal);
 }

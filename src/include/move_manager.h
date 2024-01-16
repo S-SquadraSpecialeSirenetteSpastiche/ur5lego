@@ -16,7 +16,7 @@ class MoveManager {
     actionlib::SimpleActionClient<ur5lego::GripperAction> * gripper_client;
     ros::Subscriber test_position;
    
-    int height;
+    _Float32 height = 0.02;
     _Float32 d = 0.15;
     ur5lego::Pose fixed_pos;
     ur5lego::Pose homing;

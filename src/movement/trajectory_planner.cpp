@@ -65,7 +65,6 @@ void computeAndSendTrajectory(_Float64 qi, _Float64 qf, float tf, int steps, ros
         c = thirdOrderPolynomialTrajectory(tf, qi, qf); //from math_tools
         q = c[0] + c[1]*time + c[2]*pow(time,2) + c[3]*pow(time,3);
         
-        
         send_gripper_joint_angles(q, publisher);
         
         time += dt;

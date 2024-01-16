@@ -47,7 +47,11 @@ public:
 
     void executeCB(const ur5lego::GripperGoalConstPtr &goal){
         ROS_INFO_STREAM("Received goal: " << coordsToStr(goal->finger) << " to do in " << goal->time << "s");
-        computeAndSendTrajectory(q, goal->finger, goal->time, 200, publisher);
+        // computeAndSendTrajectory(q, goal->finger, goal->time, 200, publisher);
+        // publish goal->finger to /gripper_joint_position
+        std_msgs::Float64 command;
+        command.data = goal->finger;
+        publisher.publish(command);
         q = goal->finger;
         action_server_.setSucceeded(result_);
     }    
