@@ -22,17 +22,17 @@ void send_gripper_joint_angles(_Float64 q, ros::Publisher publisher){
 /// @brief sends the joint angles with a given publisher
 /// @param qi        the startiong joint positions
 /// @param qf        the target joint positions
-/// @param t         the time to go from the starting position to the target
-/// @param steps     the number of steps to make while sending the positions
+/// @param tf        the time to go from the starting position to the target
+/// @param dt        number of poisitions to send per second
 /// @param publisher the publisher to send the positions with
-void computeAndSendTrajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float tf, int steps, ros::Publisher publisher){
-    float dt = tf/steps;
-    float time = 0;
+void compute_and_send_trajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float tf, float freq, ros::Publisher publisher){
+    float time = 0.0;
+    float dt = 1.0/freq;
 
     Eigen::VectorXd q = qi; // position sent so far
     Eigen::VectorXd c;    // polynomial coefficients
 
-    ros::Rate rate = ros::Rate(steps/tf);
+    ros::Rate rate = ros::Rate(freq);
 
     Eigen::VectorXd q_diff = (q-qf).cwiseAbs();
     int q_size = q.size();
@@ -51,6 +51,9 @@ void computeAndSendTrajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float tf, 
     }
 }
 
+
+// TODO: usare una frequenza anche qui o generalizzare la funzione con un vettore
+// per prendere un qualunque numero di elementi
 void computeAndSendTrajectory(_Float64 qi, _Float64 qf, float tf, int steps, ros::Publisher publisher){
     float dt = tf/steps;
     float time = 0;
