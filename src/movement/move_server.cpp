@@ -12,6 +12,15 @@
 #include <string>
 #include <cstdlib>
 
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+#include <Eigen/Core>
+
+
+enum ControlType{
+    JOINT_SPACE,
+    CARTESIAN_SPACE,
+};
 
 
 /// @brief action server that moves the robot
@@ -19,26 +28,26 @@ class MoveAction
 {
 protected:
     const std::string PUBLISHING_CHANNEL = "/arm_joint_position";
+    const float DT = 200;       // frequency of the points of the trajectory
 
-    // node that acts as action server
-    ros::NodeHandle server_node;
-    // node that sends commands to the robot
-    ros::NodeHandle talker_node;
-    ros::Publisher publisher;
-    // NodeHandle instance must be created before this line
-    actionlib::SimpleActionServer<ur5lego::MoveAction> action_server_;
-    std::string action_name_;
-    // create messages that are used to published feedback/result
-    ur5lego::MoveFeedback feedback_;
-    ur5lego::MoveResult result_;
-    Eigen::VectorXd q;  // current configuration of arms    
-    
+    Eigen::VectorXd q;          // current configuration of the arm
+    Eigen::Isometry3d ee_pos;        // current position of the end effector
+
     pinocchio::Model model_;    // the model of the robot
 
-    Cache cache;
-    bool cache_enabled = true;
+    Cache cache;                // cache object used to speed up the inverse kinematics
+    bool cache_enabled = true;  // if false the cache is not used
+    
+    ros::NodeHandle server_node;    // node that acts as action server
+    ros::NodeHandle talker_node;    // node used to send the joints
+    ros::Publisher publisher;       // publisher used to send the joints
+    
+    // action server stuff
+    actionlib::SimpleActionServer<ur5lego::MoveAction> action_server_;
+    std::string action_name_;
+    ur5lego::MoveFeedback feedback_;
+    ur5lego::MoveResult result_;
 
-    const float DT = 100;
 
 public:
     MoveAction(std::string name) : action_server_(server_node, name, boost::bind(&MoveAction::executeCB, this, _1), false), action_name_(name)
@@ -73,15 +82,25 @@ public:
 
         std::pair<Eigen::VectorXd, bool> res;
         if (cache_enabled) {
-            res = inverse_kinematics(model_, Eigen::Vector3d(g->X, g->Y, g->Z), Eigen::Vector3d(g->r, g->p, g->y), cache);
+            res = inverse_kinematics_cache(model_, Eigen::Vector3d(g->X, g->Y, g->Z), Eigen::Vector3d(g->r, g->p, g->y), cache);
         } else {
-            res = inverse_kinematics_without_cache(model_, Eigen::Vector3d(g->X, g->Y, g->Z), Eigen::Vector3d(g->r, g->p, g->y), q);
+            res = inverse_kinematics_interpolate(model_, Eigen::Vector3d(g->X, g->Y, g->Z), Eigen::Vector3d(g->r, g->p, g->y), q);
         }
 
         if(res.second){
             ROS_DEBUG_STREAM("Inverse kinematics succeded, q: " << res.first.transpose());
             compute_and_send_trajectory(q, res.first, g->time, DT, publisher);
-            q = res.first;
+
+            // update the current configuration
+            this->q = res.first;
+
+            // update the position of the end effector
+            this->ee_pos.translation() = Eigen::Vector3d(g->X, g->Y, g->Z);
+            this->ee_pos.linear() = (Eigen::AngleAxisd(g->y, Eigen::Vector3d::UnitZ())
+                                    * Eigen::AngleAxisd(g->p, Eigen::Vector3d::UnitY())
+                                    * Eigen::AngleAxisd(g->r, Eigen::Vector3d::UnitX())).toRotationMatrix();
+            ROS_INFO_STREAM("End effector position: " << ee_pos.translation().transpose());
+            ROS_INFO_STREAM("End effector orientation: " << pinocchio::rpy::matrixToRpy(ee_pos.rotation()).transpose());
         } else {
             ROS_WARN("Inverse kinematics failed");
         }

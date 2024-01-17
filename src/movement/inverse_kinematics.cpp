@@ -2,13 +2,14 @@
 #include <ros/ros.h>
 
 
-/// @brief computes the inverse kinematics of a 6DOF robot
+/// @brief computes the inverse kinematics of a 6DOF robot, this is done by computing the inverse kinematics
+/// of the robot for a series of points between the starting and the target position
 /// @param model                the robot model
 /// @param target_position      the desired position of the end effector
 /// @param target_orientation_rpy   the desired orientation of the end effector, in roll pitch yaw representation
 /// @param q0                   the initial guess for the inverse kinematics
 /// @return a pair containing the solution of the inverse kinematics and a boolean value indicating if the algorithm was successful
-std::pair<Eigen::VectorXd, bool> inverse_kinematics_without_cache(
+std::pair<Eigen::VectorXd, bool> inverse_kinematics_interpolate(
     pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Eigen::VectorXd q0){
 
     pinocchio::Data data(model);
@@ -36,7 +37,7 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics_without_cache(
             orientation_sofar[j] += step_size[j+3];
         }
 
-        std::pair<Eigen::VectorXd, bool> ikresult = inverse_kinematics_(model, position_sofar, orientation_sofar, q);
+        std::pair<Eigen::VectorXd, bool> ikresult = inverse_kinematics(model, position_sofar, orientation_sofar, q);
         if(!ikresult.second)
             return std::make_pair(q, false);    // the algorithm failed so q is irrelevant
         q = ikresult.first;
@@ -46,24 +47,31 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics_without_cache(
 }
 
 
-std::pair<Eigen::VectorXd, bool> inverse_kinematics(
-    pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Cache cache){
-    
-    Eigen::VectorXd q = find_closest(cache, target_position[0], target_position[1], target_position[2]);
-    ROS_DEBUG_STREAM("Closest q: " << q.transpose());
-    std::pair<Eigen::VectorXd, bool> ikresult = inverse_kinematics_(model, target_position, target_orientation_rpy, q);
-
-    return ikresult;
-}
-
-
-/// @brief computes the inverse kinematics of a 6DOF robot, this function only works for small movements and therefore should not be called directly
+/// @brief computes the inverse kinematics of a 6DOF robot, this is done by computing the inverse kinematics
+/// using as a starting guess a joint configuration that is close to the desired one
 /// @param model                the robot model
 /// @param target_position      the desired position of the end effector
 /// @param target_orientation_rpy   the desired orientation of the end effector, in roll pitch yaw representation
 /// @param q0                   the initial guess for the inverse kinematics
 /// @return a pair containing the solution of the inverse kinematics and a boolean value indicating if the algorithm was successful
-std::pair<Eigen::VectorXd, bool> inverse_kinematics_(
+std::pair<Eigen::VectorXd, bool> inverse_kinematics_cache(
+    pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Cache cache){
+    
+    Eigen::VectorXd q = find_closest(cache, target_position[0], target_position[1], target_position[2]);
+    ROS_DEBUG_STREAM("Closest q: " << q.transpose());
+    return inverse_kinematics(model, target_position, target_orientation_rpy, q);
+}
+
+
+/// @brief computes the inverse kinematics of a 6DOF robot
+/// this function only works for small movements and therefore should be called directly only for small movements
+/// for larger movements, use inverse_kinematics_interpolate or inverse_kinematics_cache
+/// @param model                the robot model
+/// @param target_position      the desired position of the end effector
+/// @param target_orientation_rpy   the desired orientation of the end effector, in roll pitch yaw representation
+/// @param q0                   the initial guess for the inverse kinematics
+/// @return a pair containing the solution of the inverse kinematics and a boolean value indicating if the algorithm was successful
+std::pair<Eigen::VectorXd, bool> inverse_kinematics(
     pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Eigen::VectorXd q0){
 
     Eigen::Matrix3d target_orientation = euler_to_rotation_matrix(Eigen::Vector3d(target_orientation_rpy));

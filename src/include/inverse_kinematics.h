@@ -9,11 +9,11 @@
 #include "cache_handler.h"
 
 
-std::pair<Eigen::VectorXd, bool> inverse_kinematics(pinocchio::Model model, Eigen::Vector3d target_position, 
+std::pair<Eigen::VectorXd, bool> inverse_kinematics_cache(pinocchio::Model model, Eigen::Vector3d target_position, 
     Eigen::Vector3d target_rotation, Cache cache);
 
-std::pair<Eigen::VectorXd, bool> inverse_kinematics_without_cache(pinocchio::Model model, Eigen::Vector3d target_position, 
+std::pair<Eigen::VectorXd, bool> inverse_kinematics_interpolate(pinocchio::Model model, Eigen::Vector3d target_position, 
     Eigen::Vector3d target_rotation, Eigen::VectorXd q0);
 
-std::pair<Eigen::VectorXd, bool> inverse_kinematics_(
+std::pair<Eigen::VectorXd, bool> inverse_kinematics(
     pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation, Eigen::VectorXd q);
