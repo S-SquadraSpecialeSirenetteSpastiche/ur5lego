@@ -61,7 +61,7 @@ ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
     ur5lego::Pose converted_msg;
     ROS_INFO("Converting Camera coordinates to Robot coordinates");
     Eigen::Vector3d T; //translation vector
-    T << 0.5, 0.3, 0.6;
+    T << 0.48, 0.43, 0.6;
     Eigen::Matrix4d M; //roto-translation matrix
     M << 0, -1, 0, T[0],
             -1, 0, 0, T[1],
@@ -226,11 +226,12 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         goalSetter(position_list[lego_type], goal);
         goalSender(goal);
 
+        /*
         //return to homing position
         goalSetter(homing, goal);
         goalSender(goal);
         //end action
-
+        */
         
         pos_msgs.pop();
     }
