@@ -27,7 +27,7 @@ void moveCallback(const std_msgs::Float32MultiArray::ConstPtr& msg)
     MoveActionClient ac("move_server", true);
     ac.waitForServer();
 
-    ROS_INFO("Sending goal to move server");
+    ROS_DEBUG("Sending goal to move server");
     ac.sendGoal(goal);
 }
 

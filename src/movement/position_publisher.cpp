@@ -71,9 +71,9 @@ class JointPositionPublisher {
                 srv.request.data = msg->data;
 
                 if (client.call(srv)) {
-                    ROS_INFO("Service call successful");
+                    ROS_DEBUG("Service call successful");
                 } else {
-                    ROS_ERROR("Failed to call service move_gripper");
+                    ROS_WARN("Failed to call service move_gripper");
                 }
             }
             else {

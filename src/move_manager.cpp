@@ -17,12 +17,12 @@ using namespace std;
 MoveManager::MoveManager(){
     move_client = new actionlib::SimpleActionClient<ur5lego::MoveAction>("move_server", true);
     gripper_client = new actionlib::SimpleActionClient<ur5lego::GripperAction>("gripper_server", true);
-    ROS_INFO("Waiting for move server to start.");
+    ROS_DEBUG("Waiting for move server to start.");
     move_client->waitForServer();
-    ROS_INFO("Move server started.");
-    ROS_INFO("Waiting for gripper server to start.");
+    ROS_DEBUG("Move server started.");
+    ROS_DEBUG("Waiting for gripper server to start.");
     gripper_client->waitForServer();
-    ROS_INFO("Gripper server started.");
+    ROS_DEBUG("Gripper server started.");
 
     fixed_pos.position.x = (_Float32)(0.3); //da sistemare
     fixed_pos.position.y = (_Float32)(0.3); //da sistemare
@@ -59,7 +59,7 @@ MoveManager::MoveManager(){
 /// @return converted_msg the message containing the coordinates of the brick in the robot
 ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
     ur5lego::Pose converted_msg;
-    ROS_INFO("Converting Camera coordinates to Robot coordinates");
+    ROS_DEBUG("Converting Camera coordinates to Robot coordinates");
     Eigen::Vector3d T; //translation vector
     T << 0.48, 0.43, 0.6;
     Eigen::Matrix4d M; //roto-translation matrix
@@ -109,6 +109,9 @@ ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
     converted_msg.orientation.y = (_Float64)(pitch);
     converted_msg.orientation.z = (_Float64)(yaw);
 
+    ROS_DEBUG_STREAM("Lego position wrt robot: X:" << converted_msg.position.x << 
+        " Y:" << converted_msg.position.y << " Z:" << converted_msg.position.z);
+
     return converted_msg;
 }
 
@@ -143,11 +146,11 @@ void MoveManager::goalSender(ur5lego::MoveGoal & goal){
     if (finished_before_timeout)
     {
         actionlib::SimpleClientGoalState state = move_client->getState();
-        ROS_INFO("Action finished: %s",state.toString().c_str());
+        ROS_DEBUG("Action finished: %s",state.toString().c_str());
     }
     else
     {
-        ROS_INFO("Action did not finish before the time out.");
+        ROS_WARN("Action did not finish before the time out.");
         //exit(1);
     }
 }
@@ -159,7 +162,7 @@ void MoveManager::grab(ur5lego::GripperGoal goal, bool grab){
         goal.finger = 70.0;
     }
     goal.time = 1.0;
-    ROS_INFO_STREAM("Gripper goal setted, ready to be sent.");
+    ROS_DEBUG_STREAM("Gripper goal setted, ready to be sent.");
     gripper_client->sendGoal(goal);
 }
 

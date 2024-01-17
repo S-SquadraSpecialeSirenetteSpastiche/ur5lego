@@ -14,11 +14,11 @@ int main (int argc, char **argv)
     // true causes the client to spin its own thread
     actionlib::SimpleActionClient<ur5lego::MoveAction> ac("move_server", true);
 
-    ROS_INFO("Waiting for action server to start.");
+    ROS_DEBUG("Waiting for action server to start.");
     // wait for the action server to start
     ac.waitForServer(); //will wait for infinite time
 
-    ROS_INFO("Action server started, sending goal.");
+    ROS_DEBUG("Action server started, sending goal.");
     // send a goal to the action
 
     std::ifstream file(ros::package::getPath("ur5lego") + std::string("/src/dest.txt"));

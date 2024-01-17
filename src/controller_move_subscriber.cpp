@@ -8,7 +8,7 @@ using namespace ros;
 std::queue<ur5lego::Pose::ConstPtr> pos_msgs;
 
 void positionCallback(const ur5lego::Pose::ConstPtr & msg){
-    ROS_INFO("I received the message!");
+    ROS_DEBUG("I received the message!");
     pos_msgs.push(msg);
 }
 
@@ -21,7 +21,7 @@ int main(int argc, char **argv
 
     Subscriber test_position = nh.subscribe("lego_position", 1000, positionCallback);
 
-    ROS_INFO_STREAM("weeee");
+    ROS_DEBUG_STREAM("controller ready");
 
 
     while(ok()){

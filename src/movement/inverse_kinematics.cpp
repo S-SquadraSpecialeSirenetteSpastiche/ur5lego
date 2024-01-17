@@ -50,7 +50,7 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
     pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Cache cache){
     
     Eigen::VectorXd q = find_closest(cache, target_position[0], target_position[1], target_position[2]);
-    ROS_INFO_STREAM("Closest q: " << q.transpose());
+    ROS_DEBUG_STREAM("Closest q: " << q.transpose());
     std::pair<Eigen::VectorXd, bool> ikresult = inverse_kinematics_(model, target_position, target_orientation_rpy, q);
 
     return ikresult;

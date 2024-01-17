@@ -72,7 +72,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "gripper_server");
     GripperAction gripperAction("gripper_server");
 
-    ROS_INFO_STREAM("Gripper server ready.");
+    ROS_DEBUG_STREAM("Gripper server ready.");
 
     ros::spin();
 

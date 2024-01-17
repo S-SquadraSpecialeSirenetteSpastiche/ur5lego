@@ -12,8 +12,7 @@ using namespace std;
 queue<ur5lego::Pose::ConstPtr> camera_pos_msgs;
 
 void cameraCallback(const ur5lego::Pose::ConstPtr & msg){
-  std::cout << "I received the message from camera!" << std::endl;
-  ROS_INFO("I received the message from camera!");
+  ROS_DEBUG("I received the message from camera!");
   camera_pos_msgs.push(msg);
 }
 
@@ -25,7 +24,7 @@ int main(int argc, char **argv){
 
   init(argc, argv, "talker");
 
-  ROS_INFO("Ready to transmit positions");
+  ROS_DEBUG("Ready to transmit positions");
 
   NodeHandle node_chatter;
   NodeHandle node_camera;

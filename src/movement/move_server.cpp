@@ -79,7 +79,7 @@ public:
         }
 
         if(res.second){
-            ROS_INFO_STREAM("Inverse kinematics succeded, q: " << res.first.transpose());
+            ROS_DEBUG_STREAM("Inverse kinematics succeded, q: " << res.first.transpose());
             compute_and_send_trajectory(q, res.first, g->time, DT, publisher);
             q = res.first;
         } else {
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
 
     MoveAction moveAction("move_server");
 
-    ROS_INFO_STREAM("Move server ready.");
+    ROS_DEBUG_STREAM("Move server ready.");
 
     ros::spin();
 
