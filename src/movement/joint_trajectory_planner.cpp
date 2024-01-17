@@ -1,6 +1,7 @@
-#include "../include/trajectory_planner.h"
+#include "../include/joint_trajectory_planner.h"
 #include <std_msgs/Float64MultiArray.h>
 #include <std_msgs/Float64.h>
+
 
 /// @brief sends the joint angles with a given publisher
 /// @param q         the joint positions to send

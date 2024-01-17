@@ -1,4 +1,4 @@
-#include "../include/trajectory_planner.h"
+#include "../include/joint_trajectory_planner.h"
 
 #include <ros/ros.h>
 #include <std_msgs/Float64MultiArray.h>

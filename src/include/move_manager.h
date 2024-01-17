@@ -1,5 +1,4 @@
-#ifndef MOVE_MANAGER_H
-#define MOVE_MANAGER_H
+#pragma once
 
 #include <ros/ros.h> 
 #include <actionlib/client/simple_action_client.h>
@@ -46,5 +45,3 @@ class MoveManager {
     void actionPlanner(std::queue<ur5lego::Pose::ConstPtr> &pos_msgs);
     
 };
-
-#endif

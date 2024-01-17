@@ -1,5 +1,5 @@
 #include "../include/inverse_kinematics.h"
-#include "../include/trajectory_planner.h"
+#include "../include/joint_trajectory_planner.h"
 
 #include "pinocchio/parsers/urdf.hpp"
 #include "std_msgs/Float64MultiArray.h"

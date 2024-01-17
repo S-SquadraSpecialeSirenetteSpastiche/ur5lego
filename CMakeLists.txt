@@ -50,7 +50,7 @@ include_directories(
 
 add_library(math src/movement/math_tools.cpp)
 add_library(inverse_kinematics src/movement/inverse_kinematics.cpp)
-add_library(trajectory src/movement/trajectory_planner.cpp)
+add_library(trajectory src/movement/joint_trajectory_planner.cpp)
 add_library(link_controller_plugin SHARED  src/link_controller_plugin.cpp)
 add_library(cache_handler src/movement/cache_handler.cpp)
 add_library(ur5lego_move_manager STATIC src/move_manager.cpp)
