@@ -226,11 +226,12 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         goalSetter(position_list[lego_type], goal);
         goalSender(goal);
 
+        /*
         //return to homing position
         goalSetter(homing, goal);
         goalSender(goal);
         //end action
-
+        */
         
         pos_msgs.pop();
     }
