@@ -1,7 +1,6 @@
 #pragma once
-
-#include "Eigen/Eigen"
 #include "math_tools.h"
+#include "Eigen/Eigen"
 #include <ros/ros.h>
 #include <std_msgs/Float64MultiArray.h>
 #include <std_msgs/Float64.h>

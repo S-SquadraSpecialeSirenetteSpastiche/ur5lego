@@ -50,12 +50,14 @@ include_directories(
 
 add_library(math src/movement/math_tools.cpp)
 add_library(inverse_kinematics src/movement/inverse_kinematics.cpp)
-add_library(trajectory src/movement/joint_trajectory_planner.cpp)
+add_library(joint_trajectory src/movement/joint_trajectory_planner.cpp)
+add_library(cartesian_trajectory src/movement/cartesian_trajectory_planner.cpp)
 add_library(link_controller_plugin SHARED  src/link_controller_plugin.cpp)
 add_library(cache_handler src/movement/cache_handler.cpp)
 add_library(ur5lego_move_manager STATIC src/move_manager.cpp)
 
-target_link_libraries(trajectory ${catkin_LIBRARIES} math inverse_kinematics)
+target_link_libraries(joint_trajectory ${catkin_LIBRARIES} math inverse_kinematics) #TODO: inverse_kinematics should not be needed
+target_link_libraries(cartesian_trajectory ${catkin_LIBRARIES} inverse_kinematics)
 target_link_libraries(link_controller_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
 target_link_libraries(inverse_kinematics ${catkin_LIBRARIES} math cache_handler)
 
@@ -66,11 +68,11 @@ add_executable(ur5lego_move_server_wrapper src/movement/move_server_wrapper.cpp)
 add_executable(ur5lego_position_publisher src/movement/position_publisher.cpp)
 add_executable(ur5lego_gripper_server src/movement/gripper_server.cpp)
 
-target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES} pinocchio::pinocchio inverse_kinematics math trajectory cache_handler)
-# target_link_libraries(ur5lego_send_homing_position ${catkin_LIBRARIES} trajectory)
+target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES} pinocchio::pinocchio inverse_kinematics math joint_trajectory cache_handler)
+# target_link_libraries(ur5lego_send_homing_position ${catkin_LIBRARIES} joint_trajectory)
 target_link_libraries(ur5lego_move_server_wrapper ${catkin_LIBRARIES})
 target_link_libraries(ur5lego_position_publisher ${catkin_LIBRARIES})
-target_link_libraries(ur5lego_gripper_server ${catkin_LIBRARIES} math trajectory)
+target_link_libraries(ur5lego_gripper_server ${catkin_LIBRARIES} math joint_trajectory)
 
 add_executable(ur5lego_move_publisher src/controller_move_publisher.cpp)
 target_link_libraries(ur5lego_move_publisher ${catkin_LIBRARIES})

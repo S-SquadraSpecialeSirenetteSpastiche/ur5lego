@@ -28,10 +28,9 @@ class MoveAction
 {
 protected:
     const std::string PUBLISHING_CHANNEL = "/arm_joint_position";
-    const float DT = 200;       // frequency of the points of the trajectory
+    const float FREQ = 200;     // frequency of the points of the trajectory
 
     Eigen::VectorXd q;          // current configuration of the arm
-    Eigen::Isometry3d ee_pos;        // current position of the end effector
 
     pinocchio::Model model_;    // the model of the robot
 
@@ -93,14 +92,6 @@ public:
 
             // update the current configuration
             this->q = res.first;
-
-            // update the position of the end effector
-            this->ee_pos.translation() = Eigen::Vector3d(g->X, g->Y, g->Z);
-            this->ee_pos.linear() = (Eigen::AngleAxisd(g->y, Eigen::Vector3d::UnitZ())
-                                    * Eigen::AngleAxisd(g->p, Eigen::Vector3d::UnitY())
-                                    * Eigen::AngleAxisd(g->r, Eigen::Vector3d::UnitX())).toRotationMatrix();
-            ROS_INFO_STREAM("End effector position: " << ee_pos.translation().transpose());
-            ROS_INFO_STREAM("End effector orientation: " << pinocchio::rpy::matrixToRpy(ee_pos.rotation()).transpose());
         } else {
             ROS_WARN("Inverse kinematics failed");
         }
