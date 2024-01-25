@@ -7,7 +7,7 @@
     <!-- start gazebo -->
     <include file="$(find ur5lego)/launch/start_gazebo.launch"></include>
     
-    <include file="$(find ur5lego)/launch/image_converter.launch"></include>
+    <include file="$(find ur5lego)/launch/image_handler.launch"></include>
 
     <!-- start the move server and its wrapper-->
     <node name="move_server" pkg="ur5lego" type="ur5lego_move_server"/>
@@ -24,4 +24,6 @@
         <arg name="spawn_x" value="0.2" />
         <arg name="spawn_y" value="0.7" />
     </include>
+
+    <!--include file="$(find ur5lego)/launch/rviz.launch"></include-->
 </launch>

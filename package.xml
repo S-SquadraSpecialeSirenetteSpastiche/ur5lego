@@ -23,10 +23,8 @@
   <depend>roslib</depend>
   <depend>sensor_msgs</depend>
   <depend>cv_bridge</depend>
-  <!-- depend>opencv2</depend -->
   <depend>pinocchio</depend>
   <depend>actionlib_msgs</depend>
-
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

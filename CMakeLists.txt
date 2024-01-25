@@ -8,6 +8,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include/eigen3 -w")
 
 find_package(catkin REQUIRED COMPONENTS roscpp rospy roslib pinocchio actionlib_msgs actionlib sensor_msgs cv_bridge)
 
+catkin_python_setup()
+
 add_action_files(
     DIRECTORY action
     FILES Move.action
@@ -40,12 +42,10 @@ target_link_libraries(ur5lego_move_client ${catkin_LIBRARIES})
 add_executable(ur5lego_move_server_wrapper src/move_server_wrapper.cpp)
 target_link_libraries(ur5lego_move_server_wrapper ${catkin_LIBRARIES})
 
-# add_executable(ur5lego_image_converter src/image_converter.py)
-# target_link_libraries(ur5lego_image_converter ${catkin_LIBRARIES})
-# add_dependencies(ur5lego_image_converter ${ur5lego_EXPORTED_TARGETS})
-
-catkin_install_python(PROGRAMS src/image_converter.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+catkin_install_python(
+    PROGRAMS src/vision/image_saver.py src/vision/change_angles.py src/vision/image_cropper.py src/vision/prova2.py src/vision/frame.py
+    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
 add_executable(ur5lego_send_homing_position src/send_homing_position.cpp)
 target_link_libraries(ur5lego_send_homing_position ${catkin_LIBRARIES} trajectory)

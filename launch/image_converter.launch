@@ -1,3 +1,0 @@
-<launch>
-    <node name="image_listener" pkg="ur5lego" type="image_converter.py"/>
-</launch>
