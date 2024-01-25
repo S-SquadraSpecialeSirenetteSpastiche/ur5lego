@@ -84,6 +84,7 @@ ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
                     0, cos(msg->orientation.x), -sin(msg->orientation.x),
                     0, sin(msg->orientation.x), cos(msg->orientation.x);
 
+    /*
     Eigen::Matrix3d pitch_matrix;
     pitch_matrix << cos(msg->orientation.y), 0, sin(msg->orientation.y),
                     0, 1, 0,
@@ -93,13 +94,14 @@ ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
                     sin(msg->orientation.z), cos(msg->orientation.z), 0,
                     0, 0, 1;
     Eigen::Matrix3d RPY = roll_matrix * pitch_matrix * yaw_matrix;
-
-    robot_pov_coordinates = M * camera_pov_coordinates;
     Eigen::Matrix3d rotated_rpy = R * RPY;
+    */
+    robot_pov_coordinates = M * camera_pov_coordinates;
+    
 
     double roll = 0; //atan2(rotated_rpy(2,1), rotated_rpy(2,2));
     double pitch = -1.57; //atan2(-rotated_rpy(2,0), sqrt(pow(rotated_rpy(2,1),2) + pow(rotated_rpy(2,2),2)));
-    double yaw = 1.57; //atan2(rotated_rpy(1,0), rotated_rpy(0,0));
+    double yaw = -(msg->orientation.z); //atan2(rotated_rpy(1,0), rotated_rpy(0,0));
 
     converted_msg.legoType = msg->legoType;
     converted_msg.position.x = (_Float32)(robot_pov_coordinates[0]);
@@ -166,6 +168,14 @@ void MoveManager::grab(ur5lego::GripperGoal goal, bool grab){
     gripper_client->sendGoal(goal);
 }
 
+/*void MoveManager::gripperMovementDirection(_Float64 previous_msg,_Float64 msg){
+    if(|previous_msg - msg| < |previous_msg - (msg + 3.14)|){
+        //move clockwise
+    }else{
+        //move counterclockwise
+    }
+}*/
+
 
 void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
 
@@ -204,7 +214,7 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         //descend and grab the object
         goalSetter(X,Y,Z,r,p,y, goal);
         goalSender(goal);
-        grab(hand, true);
+        //grab(hand, true); //TODO: uncomment this line when the ur5 upward movement is fixed
 
         
         //lift the brick
@@ -224,7 +234,8 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
                      position_list[lego_type].orientation.z, 
                      goal);
         goalSender(goal);
-        grab(hand, false); //release the brick
+        //release the brick
+        //grab(hand, false); //TODO: uncomment this line when the ur5 upward movement is fixed
 
         goalSetter(position_list[lego_type], goal);
         goalSender(goal);
