@@ -78,7 +78,13 @@ class JointPositionPublisher {
             }
             else {
                 float gripper_millimeter_span = msg->data;
-                float gripper_angle = asin((gripper_millimeter_span-60)/(2*80));
+                float gripper_angle; // asin((gripper_millimeter_span-350)/(2*100));
+                if(gripper_millimeter_span == 35.0){
+                    gripper_angle = -0.08;
+                }
+                else{
+                    gripper_angle = asin((gripper_millimeter_span-35)/(2*100));
+                }
                 ROS_INFO_STREAM("Moving the simulated gripper to: " << gripper_angle << "rad");
                 for(int i=0; i<gripper_positions.size(); i++){
                     gripper_positions[i] = gripper_angle;

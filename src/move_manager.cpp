@@ -61,7 +61,7 @@ ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
     ur5lego::Pose converted_msg;
     ROS_DEBUG("Converting Camera coordinates to Robot coordinates");
     Eigen::Vector3d T; //translation vector
-    T << 0.48, 0.43, 0.6;
+    T << 0.47, 0.42, 0.65;
     Eigen::Matrix4d M; //roto-translation matrix
     M << 0, -1, 0, T[0],
             -1, 0, 0, T[1],
@@ -214,7 +214,7 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         //descend and grab the object
         goalSetter(X,Y,Z,r,p,y, goal);
         goalSender(goal);
-        //grab(hand, true); //TODO: uncomment this line when the ur5 upward movement is fixed
+        grab(hand, true); //TODO: uncomment this line when the ur5 upward movement is fixed
 
         
         //lift the brick
@@ -235,7 +235,7 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
                      goal);
         goalSender(goal);
         //release the brick
-        //grab(hand, false); //TODO: uncomment this line when the ur5 upward movement is fixed
+        grab(hand, false); //TODO: uncomment this line when the ur5 upward movement is fixed
 
         goalSetter(position_list[lego_type], goal);
         goalSender(goal);
