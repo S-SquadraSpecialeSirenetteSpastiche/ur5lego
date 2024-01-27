@@ -1,5 +1,6 @@
 #include "../include/inverse_kinematics.h"
 #include "../include/joint_trajectory_planner.h"
+#include "../include/cartesian_trajectory_planner.h"
 #include "../include/cache_handler.h"
 
 #include "pinocchio/parsers/urdf.hpp"
@@ -27,10 +28,13 @@ enum ControlType{
 class MoveAction
 {
 protected:
+    // const ControlType CONTROL_TYPE = CARTESIAN_SPACE;
     const std::string PUBLISHING_CHANNEL = "/arm_joint_position";
     const float FREQ = 200;     // frequency of the points of the trajectory
 
     Eigen::VectorXd q;          // current configuration of the arm
+    Eigen::Vector3d ee_pos;     // current position of the end effector
+    Eigen::Vector3d ee_rot;     // current rotation of the end effector
 
     pinocchio::Model model_;    // the model of the robot
 
@@ -61,6 +65,10 @@ public:
         q = Eigen::VectorXd(6);
         q << -0.32, -0.78, -2.56, -1.63, -1.57, 3.49;   // homing position
 
+        // TODO: put here the actual position and orientation of the end effector
+        ee_pos = Eigen::Vector3d(0.0, 0.0, 0.0);
+        ee_rot = Eigen::Vector3d(0.0, 0.0, 0.0);
+
         cache = parse_cache(ros::package::getPath("ur5lego") + "/data/ik_cache.txt");
         if (cache.empty()) {
             ROS_WARN("Error while parsing cache file, continuing without");
@@ -79,19 +87,43 @@ public:
     void executeCB(const ur5lego::MoveGoalConstPtr &g){
         ROS_INFO_STREAM("Received goal: " << coordsToStr(g->X, g->Y, g->Z, g->r, g->p, g->y) << " to do in " << g->time << "s");
 
+        // if we have to move from one side of the table to the other, use the arc trajectory, 
+        // otherwise use the one over the joint space
+        ControlType control_type = this->getControlType(ee_pos[0], ee_pos[1], g->X, g->Y);
+        ROS_INFO_STREAM("Control type: " << control_type);
+
         std::pair<Eigen::VectorXd, bool> res;
-        if (cache_enabled) {
-            res = inverse_kinematics_cache(model_, Eigen::Vector3d(g->X, g->Y, g->Z), Eigen::Vector3d(g->r, g->p, g->y), cache);
+        if (control_type == JOINT_SPACE) {
+            if (cache_enabled) {
+                res = inverse_kinematics_cache(model_, Eigen::Vector3d(g->X, g->Y, g->Z), Eigen::Vector3d(g->r, g->p, g->y), cache);
+            } else {
+                res = inverse_kinematics_interpolate(model_, Eigen::Vector3d(g->X, g->Y, g->Z), Eigen::Vector3d(g->r, g->p, g->y), q);
+            }
+        } else if (control_type == CARTESIAN_SPACE) {
+            // build ti from ee_pos and ee_rot
+            Eigen::Isometry3d ti = Eigen::Isometry3d::Identity();
+            ti.translation() = ee_pos;
+            ti.linear() = (Eigen::AngleAxisd(ee_rot[2], Eigen::Vector3d::UnitZ())
+                        * Eigen::AngleAxisd(ee_rot[1], Eigen::Vector3d::UnitY())
+                        * Eigen::AngleAxisd(ee_rot[0], Eigen::Vector3d::UnitX())).toRotationMatrix();
+            Eigen::Isometry3d tf = Eigen::Isometry3d::Identity();
+            tf.translation() = Eigen::Vector3d(g->X, g->Y, g->Z);
+            tf.linear() = (Eigen::AngleAxisd(g->y, Eigen::Vector3d::UnitZ())
+                        * Eigen::AngleAxisd(g->p, Eigen::Vector3d::UnitY())
+                        * Eigen::AngleAxisd(g->r, Eigen::Vector3d::UnitX())).toRotationMatrix();
+            res = compute_and_send_arc_trajectory(model_, q, ti, tf, g->time, 0.2, publisher);
         } else {
-            res = inverse_kinematics_interpolate(model_, Eigen::Vector3d(g->X, g->Y, g->Z), Eigen::Vector3d(g->r, g->p, g->y), q);
+            ROS_ERROR("Unimplemented");
+            return;
         }
-
+        
         if(res.second){
-            ROS_DEBUG_STREAM("Inverse kinematics succeded, q: " << res.first.transpose());
-            compute_and_send_trajectory(q, res.first, g->time, DT, publisher);
-
+            ROS_INFO_STREAM("Inverse kinematics succeded, q: " << res.first.transpose());
+            compute_and_send_trajectory(q, res.first, g->time, FREQ, publisher);
             // update the current configuration
             this->q = res.first;
+            this->ee_pos = Eigen::Vector3d(g->X, g->Y, g->Z);
+            this->ee_rot = Eigen::Vector3d(g->r, g->p, g->y);
         } else {
             ROS_WARN("Inverse kinematics failed");
         }
@@ -108,6 +140,13 @@ private:
         ss << "(" <<  X << ", " << Y << ", " << Z << ") (" << r << ", " << p << ", " << y << ")";
         return ss.str();
     } 
+
+    /// @brief returns the control type to use to avoid the singularity in the center of the workspace
+    ControlType getControlType(float currX, float currY, float desX, float desY){
+        // we have to avoid the singularity if we move to the other side of the table: currX*desX<0
+        // and the y coordinate of the middle point is close to the robot: (currY+desY)/2.0 < 0.4
+        return (currX*desX < 0 && (currY+desY)/2.0 < 0.4) ? CARTESIAN_SPACE : JOINT_SPACE;
+    }
 };
 
 int main(int argc, char **argv)

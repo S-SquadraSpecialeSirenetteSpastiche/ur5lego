@@ -35,19 +35,14 @@ void compute_and_send_trajectory(Eigen::VectorXd qi, Eigen::VectorXd qf, float t
 
     ros::Rate rate = ros::Rate(freq);
 
-    Eigen::VectorXd q_diff = (q-qf).cwiseAbs();
-    int q_size = q.size();
     while(time < tf){
-        for(int jointi=0; jointi<q_size; jointi++){
-            c = thirdOrderPolynomialTrajectory(tf, qi[jointi], qf[jointi]); //from math_tools
+        for(int jointi=0; jointi<q.size(); jointi++){
+            c = thirdOrderPolynomialTrajectory(tf, qi[jointi], qf[jointi]); // TODO: do we really need to compute this every time?
             q[jointi] = c[0] + c[1]*time + c[2]*pow(time,2) + c[3]*pow(time,3);
         }
         
         send_arm_joint_angles(q, publisher);
-        
         time += dt;
-        q_diff = (q-qf).cwiseAbs();
-
         rate.sleep();
     }
 }

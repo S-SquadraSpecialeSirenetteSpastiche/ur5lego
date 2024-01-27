@@ -72,14 +72,14 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics_cache(
 /// @param q0                   the initial guess for the inverse kinematics
 /// @return a pair containing the solution of the inverse kinematics and a boolean value indicating if the algorithm was successful
 std::pair<Eigen::VectorXd, bool> inverse_kinematics(
-    pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Eigen::VectorXd q0){
+    pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Eigen::VectorXd q0
+    double eps, bool line_step){
 
-    Eigen::Matrix3d target_orientation = euler_to_rotation_matrix(Eigen::Vector3d(target_orientation_rpy));
+    Eigen::Matrix3d target_orientation = euler_to_rotation_matrix(Eigen::Vector3d(target_orientation_rpy)); // TODO: why wrap it in a vector3d? it already is one?
     pinocchio::FrameIndex frame_id = model.getFrameId("ee_link", (pinocchio::FrameType)pinocchio::BODY);
 
     pinocchio::Data data(model);
 
-    double eps = 1e-6;
     double alpha = 1, beta = 0.5;
 
     int niter = 0;  // iterations so far
@@ -118,28 +118,32 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
         dq = (jacobian + lambda*Eigen::MatrixXd::Identity(6, model.nv)).inverse()*e_bar_q0;
         Eigen::VectorXd q1(model.nv);
         
-        while(true){
-            // compute new guess and the position of the ee with the new guess
-            q1 = q0 + dq * alpha;
-            pinocchio::SE3 pos_q1;
-            pinocchio::computeAllTerms(model, data, q1, Eigen::VectorXd::Zero(model.nv));
-            pos_q1 = pinocchio::updateFramePlacement(model, data, frame_id);
+        if(line_step){
+            while(true){
+                // compute new guess and the position of the ee with the new guess
+                q1 = q0 + dq * alpha;
+                pinocchio::SE3 pos_q1;
+                pinocchio::computeAllTerms(model, data, q1, Eigen::VectorXd::Zero(model.nv));
+                pos_q1 = pinocchio::updateFramePlacement(model, data, frame_id);
 
-            // compute error of the new guess
-            Eigen::VectorXd e_bar_q1(model.nv);
-            e_bar_q1 << target_position - pos_q1.translation(), errorInSO3(pos_q1.rotation(), target_orientation);
+                // compute error of the new guess
+                Eigen::VectorXd e_bar_q1(model.nv);
+                e_bar_q1 << target_position - pos_q1.translation(), errorInSO3(pos_q1.rotation(), target_orientation);
 
-            // if the new guess is worse than the previous one, we adjust alpha and try again
-            // otherwise the iteration is complete
-            double improvement = e_bar_q0.norm() - e_bar_q1.norm();
-            if(improvement < 0.0){
-                alpha *= beta;
+                // if the new guess is worse than the previous one, we adjust alpha and try again
+                // otherwise the iteration is complete
+                double improvement = e_bar_q0.norm() - e_bar_q1.norm();
+                if(improvement < 0.0){
+                    alpha *= beta;
+                }
+                else{
+                    q0 = q1;
+                    alpha = 1;
+                    break;
+                }
             }
-            else{
-                q0 = q1;
-                alpha = 1;
-                break;
-            }
+        } else {
+            q0 += dq;
         }
         niter++;
     }
