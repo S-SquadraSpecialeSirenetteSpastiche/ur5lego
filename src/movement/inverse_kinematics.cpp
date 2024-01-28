@@ -66,7 +66,7 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics(
 std::pair<Eigen::VectorXd, bool> inverse_kinematics_(
     pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation_rpy, Eigen::VectorXd q0){
 
-    Eigen::Matrix3d target_orientation = euler_to_rotation_matrix(Eigen::Vector3d(target_orientation_rpy));
+    Eigen::Matrix3d target_orientation = euler_to_rotation_matrix(target_orientation_rpy);
     pinocchio::FrameIndex frame_id = model.getFrameId("ee_link", (pinocchio::FrameType)pinocchio::BODY);
 
     pinocchio::Data data(model);
