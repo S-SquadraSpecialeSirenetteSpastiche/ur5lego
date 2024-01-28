@@ -52,7 +52,6 @@ public:
         std_msgs::Float64 command;
         command.data = goal->finger;
         publisher.publish(command);
-        ros::Duration(1.0).sleep();
         q = goal->finger;
         action_server_.setSucceeded(result_);
     }    

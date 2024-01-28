@@ -24,6 +24,8 @@ MoveManager::MoveManager(){
     gripper_client->waitForServer();
     ROS_DEBUG("Gripper server started.");
 
+    d = 0.20;
+
     fixed_pos.position.x = (_Float32)(0.3); //da sistemare
     fixed_pos.position.y = (_Float32)(0.3); //da sistemare
     fixed_pos.position.z = (_Float32)(0.40); //da sistemare
@@ -31,28 +33,118 @@ MoveManager::MoveManager(){
     fixed_pos.orientation.y = (_Float64)(-1.57);
     fixed_pos.orientation.z = (_Float64)(1.57);
 
-    homing.position.x = (_Float32)(-0.32); //da sistemare
-    homing.position.y = (_Float32)(0.38); //da sistemare
-    homing.position.z = (_Float32)(0.2); //da sistemare
-    homing.orientation.x = (_Float64)(1.5707); //da sistemare
-    homing.orientation.y = (_Float64)(-1.5707); //da sistemare
-    homing.orientation.z = (_Float64)(0); //da sistemare*/
+    //positions where each type of lego should be moved to
+    X1_Y1_Z2_Pose.position.x = (_Float32)(0.45);
+    X1_Y1_Z2_Pose.position.y = (_Float32)(0.40);
+    X1_Y1_Z2_Pose.position.z = (_Float32)(0.40);
+    X1_Y1_Z2_Pose.orientation.x = (_Float64)(0);
+    X1_Y1_Z2_Pose.orientation.y = (_Float64)(-1.57);
+    X1_Y1_Z2_Pose.orientation.z = (_Float64)(1.57);
+
+    X1_Y2_Z1_Pose.position.x = (_Float32)(0.40);
+    X1_Y2_Z1_Pose.position.y = (_Float32)(0.40);
+    X1_Y2_Z1_Pose.position.z = (_Float32)(0.40);
+    X1_Y2_Z1_Pose.orientation.x = (_Float64)(0);
+    X1_Y2_Z1_Pose.orientation.y = (_Float64)(-1.57);
+    X1_Y2_Z1_Pose.orientation.z = (_Float64)(1.57);
+
+    X1_Y2_Z2_Pose.position.x = (_Float32)(0.35);
+    X1_Y2_Z2_Pose.position.y = (_Float32)(0.40);
+    X1_Y2_Z2_Pose.position.z = (_Float32)(0.40);
+    X1_Y2_Z2_Pose.orientation.x = (_Float64)(0);
+    X1_Y2_Z2_Pose.orientation.y = (_Float64)(-1.57);
+    X1_Y2_Z2_Pose.orientation.z = (_Float64)(1.57);
+
+    X1_Y2_Z2_CHAMFER_Pose.position.x = (_Float32)(0.45);
+    X1_Y2_Z2_CHAMFER_Pose.position.y = (_Float32)(0.30);
+    X1_Y2_Z2_CHAMFER_Pose.position.z = (_Float32)(0.40);
+    X1_Y2_Z2_CHAMFER_Pose.orientation.x = (_Float64)(0);
+    X1_Y2_Z2_CHAMFER_Pose.orientation.y = (_Float64)(-1.57);
+    X1_Y2_Z2_CHAMFER_Pose.orientation.z = (_Float64)(1.57);
+
+    X1_Y2_Z2_TWINFILLET_Pose.position.x = (_Float32)(0.40);
+    X1_Y2_Z2_TWINFILLET_Pose.position.y = (_Float32)(0.30);
+    X1_Y2_Z2_TWINFILLET_Pose.position.z = (_Float32)(0.40);
+    X1_Y2_Z2_TWINFILLET_Pose.orientation.x = (_Float64)(0);
+    X1_Y2_Z2_TWINFILLET_Pose.orientation.y = (_Float64)(-1.57);
+    X1_Y2_Z2_TWINFILLET_Pose.orientation.z = (_Float64)(1.57);
+
+    X1_Y3_Z2_Pose.position.x = (_Float32)(0.35);
+    X1_Y3_Z2_Pose.position.y = (_Float32)(0.30);
+    X1_Y3_Z2_Pose.position.z = (_Float32)(0.40);
+    X1_Y3_Z2_Pose.orientation.x = (_Float64)(0);
+    X1_Y3_Z2_Pose.orientation.y = (_Float64)(-1.57);
+    X1_Y3_Z2_Pose.orientation.z = (_Float64)(1.57);
+
+    X1_Y3_Z2_FILLET_Pose.position.x = (_Float32)(0.4);
+    X1_Y3_Z2_FILLET_Pose.position.y = (_Float32)(0.2);
+    X1_Y3_Z2_FILLET_Pose.position.z = (_Float32)(0.4);
+    X1_Y3_Z2_FILLET_Pose.orientation.x = (_Float64)(0);
+    X1_Y3_Z2_FILLET_Pose.orientation.y = (_Float64)(-1.57);
+    X1_Y3_Z2_FILLET_Pose.orientation.z = (_Float64)(1.57);
+    
+    X1_Y4_Z1_Pose.position.x = (_Float32)(0.40);
+    X1_Y4_Z1_Pose.position.y = (_Float32)(0.20);
+    X1_Y4_Z1_Pose.position.z = (_Float32)(0.40);
+    X1_Y4_Z1_Pose.orientation.x = (_Float64)(0);
+    X1_Y4_Z1_Pose.orientation.y = (_Float64)(-1.57);
+    X1_Y4_Z1_Pose.orientation.z = (_Float64)(1.57);
+
+    X1_Y4_Z2_Pose.position.x = (_Float32)(0.35);
+    X1_Y4_Z2_Pose.position.y = (_Float32)(0.20);
+    X1_Y4_Z2_Pose.position.z = (_Float32)(0.40);
+    X1_Y4_Z2_Pose.orientation.x = (_Float64)(0);
+    X1_Y4_Z2_Pose.orientation.y = (_Float64)(-1.57);
+    X1_Y4_Z2_Pose.orientation.z = (_Float64)(1.57);
+    
+    X2_Y2_Z2_Pose.position.x = (_Float32)(0.45);
+    X2_Y2_Z2_Pose.position.y = (_Float32)(0.10);
+    X2_Y2_Z2_Pose.position.z = (_Float32)(0.40);
+    X2_Y2_Z2_Pose.orientation.x = (_Float64)(0);
+    X2_Y2_Z2_Pose.orientation.y = (_Float64)(-1.57);
+    X2_Y2_Z2_Pose.orientation.z = (_Float64)(1.57);
+
+    X2_Y2_Z2_FILLET_Pose.position.x = (_Float32)(0.35);
+    X2_Y2_Z2_FILLET_Pose.position.y = (_Float32)(0.10);
+    X2_Y2_Z2_FILLET_Pose.position.z = (_Float32)(0.40);
+    X2_Y2_Z2_FILLET_Pose.orientation.x = (_Float64)(0);
+    X2_Y2_Z2_FILLET_Pose.orientation.y = (_Float64)(-1.57);
+    X2_Y2_Z2_FILLET_Pose.orientation.z = (_Float64)(1.57);
 
     ///positions where each type of lego should be moved to
-    position_list = new ur5lego::Pose[11];
-    position_list[X1_Y1_Z2] = fixed_pos;
-    position_list[X1_Y2_Z1] = fixed_pos;
-    position_list[X1_Y2_Z2] = fixed_pos;
-    position_list[X1_Y2_Z2_CHAMFER] = fixed_pos;
-    position_list[X1_Y2_Z2_TWINFILLET] = fixed_pos;
-    position_list[X1_Y3_Z2] = fixed_pos;
-    position_list[X1_Y3_Z2_FILLET] = fixed_pos;
-    position_list[X1_Y4_Z1] = fixed_pos;
-    position_list[X1_Y4_Z2] = fixed_pos;
-    position_list[X2_Y2_Z2] = fixed_pos;
-    position_list[X2_Y2_Z2_FILLET] = fixed_pos;
+    //position_list = new ur5lego::Pose[11];
+    position_list[X1_Y1_Z2] = X1_Y1_Z2_Pose;
+    position_list[X1_Y2_Z1] = X1_Y2_Z1_Pose;
+    position_list[X1_Y2_Z2] = X1_Y2_Z2_Pose;
+    position_list[X1_Y2_Z2_CHAMFER] = X1_Y2_Z2_CHAMFER_Pose;
+    position_list[X1_Y2_Z2_TWINFILLET] = X1_Y2_Z2_TWINFILLET_Pose;
+    position_list[X1_Y3_Z2] = X1_Y3_Z2_Pose;
+    position_list[X1_Y3_Z2_FILLET] = X1_Y3_Z2_FILLET_Pose;
+    position_list[X1_Y4_Z1] = X1_Y4_Z1_Pose;
+    position_list[X1_Y4_Z2] = X1_Y4_Z2_Pose;
+    position_list[X2_Y2_Z2] = X2_Y2_Z2_Pose;
+    position_list[X2_Y2_Z2_FILLET] = X2_Y2_Z2_FILLET_Pose;
 
+    ///heights of each lego stack
+    //height_list = new _Float32[11];
+    height_list[X1_Y1_Z2] = 0.036;
+    height_list[X1_Y2_Z1] = 0.016;
+    height_list[X1_Y2_Z2] = 0.036;           
+    height_list[X1_Y2_Z2_CHAMFER] = 0.036;   
+    height_list[X1_Y2_Z2_TWINFILLET] = 0.036;
+    height_list[X1_Y3_Z2] = 0.036;           
+    height_list[X1_Y3_Z2_FILLET] = 0.036;
+    height_list[X1_Y4_Z1] = 0.018;           
+    height_list[X1_Y4_Z2] = 0.0;
+    height_list[X2_Y2_Z2] = 0.0;
+    height_list[X2_Y2_Z2_FILLET] = 0.036;
+
+    ///current height of each lego stack
+    for(int i=0; i<NUM_LEGO_TYPES; i++){
+        current_height[i] = 0.0;
+    }
 }   
+
 
 /// @brief this function converts the coordinates of the brick from the camera frame to the robot frame
 /// @param msg the message containing the coordinates of the brick in the camera frame
@@ -61,7 +153,7 @@ ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
     ur5lego::Pose converted_msg;
     ROS_DEBUG("Converting Camera coordinates to Robot coordinates");
     Eigen::Vector3d T; //translation vector
-    T << 0.47, 0.42, 0.65;
+    T << 0.47, 0.45, 0.65;
     Eigen::Matrix4d M; //roto-translation matrix
     M << 0, -1, 0, T[0],
             -1, 0, 0, T[1],
@@ -106,7 +198,7 @@ ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
     converted_msg.legoType = msg->legoType;
     converted_msg.position.x = (_Float32)(robot_pov_coordinates[0]);
     converted_msg.position.y = (_Float32)(robot_pov_coordinates[1]);
-    converted_msg.position.z = (_Float32)(robot_pov_coordinates[2] - height);
+    converted_msg.position.z = (_Float32)(robot_pov_coordinates[2] - 0.05);
     converted_msg.orientation.x = (_Float64)(roll);
     converted_msg.orientation.y = (_Float64)(pitch);
     converted_msg.orientation.z = (_Float64)(yaw);
@@ -157,15 +249,21 @@ void MoveManager::goalSender(ur5lego::MoveGoal & goal){
     }
 }
 
-void MoveManager::grab(ur5lego::GripperGoal goal, bool grab){
+void MoveManager::grab(ur5lego::GripperGoal goal, bool grab, Lego type){
     if(grab){
-        goal.finger = 35.0;
+        if(type == X2_Y2_Z2_FILLET || type == X2_Y2_Z2){
+            goal.finger = 65.0;
+        }
+        else{
+            goal.finger = 35.0;
+        }
     }else{
         goal.finger = 70.0;
     }
     goal.time = 1.0;
     ROS_DEBUG_STREAM("Gripper goal setted, ready to be sent.");
     gripper_client->sendGoal(goal);
+    gripper_client ->waitForResult(ros::Duration(30.0));
 }
 
 /*void MoveManager::gripperMovementDirection(_Float64 previous_msg,_Float64 msg){
@@ -214,7 +312,7 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         //descend and grab the object
         goalSetter(X,Y,Z,r,p,y, goal);
         goalSender(goal);
-        grab(hand, true); //TODO: uncomment this line when the ur5 upward movement is fixed
+        grab(hand, true, lego_type); //TODO: uncomment this line when the ur5 upward movement is fixed
 
         
         //lift the brick
@@ -222,20 +320,24 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         goalSender(goal);
         
         //move the brick to fixed_pos
+        ROS_INFO_STREAM("Moving the brick to position: X:" << position_list[lego_type].position.x 
+                        << " Y:" << position_list[lego_type].position.y 
+                        << " Z:" << position_list[lego_type].position.z);
         goalSetter(position_list[lego_type], goal);
         goalSender(goal);
         
         //lower the brick
         goalSetter(position_list[lego_type].position.x,
                      position_list[lego_type].position.y, 
-                     position_list[lego_type].position.z + d, //lower brick
+                     position_list[lego_type].position.z + d - current_height[lego_type], //lower brick
                      position_list[lego_type].orientation.x, 
                      position_list[lego_type].orientation.y, 
                      position_list[lego_type].orientation.z, 
                      goal);
         goalSender(goal);
         //release the brick
-        grab(hand, false); //TODO: uncomment this line when the ur5 upward movement is fixed
+        grab(hand, false, lego_type); //TODO: uncomment this line when the ur5 upward movement is fixed
+        current_height[lego_type] += height_list[lego_type]; //update current height of the stack
 
         goalSetter(position_list[lego_type], goal);
         goalSender(goal);
@@ -246,7 +348,7 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         goalSender(goal);
         //end action
         */
-        
+        ROS_INFO_STREAM("Action completed.");
         pos_msgs.pop();
     }
 }  
