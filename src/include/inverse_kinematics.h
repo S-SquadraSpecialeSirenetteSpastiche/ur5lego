@@ -16,5 +16,4 @@ std::pair<Eigen::VectorXd, bool> inverse_kinematics_interpolate(pinocchio::Model
     Eigen::Vector3d target_rotation, Eigen::VectorXd q0);
 
 std::pair<Eigen::VectorXd, bool> inverse_kinematics(
-    pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation, Eigen::VectorXd q,
-    double eps=1e-6, bool line_step=false);
+    pinocchio::Model model, Eigen::Vector3d target_position, Eigen::Vector3d target_orientation, Eigen::VectorXd q);

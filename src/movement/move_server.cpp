@@ -99,8 +99,10 @@ public:
             } else {
                 res = inverse_kinematics_interpolate(model_, Eigen::Vector3d(g->X, g->Y, g->Z), Eigen::Vector3d(g->r, g->p, g->y), q);
             }
+            if(res.second){
+                compute_and_send_trajectory(q, res.first, g->time, FREQ, publisher);
+            }
         } else if (control_type == CARTESIAN_SPACE) {
-            // build ti from ee_pos and ee_rot
             Eigen::Isometry3d ti = Eigen::Isometry3d::Identity();
             ti.translation() = ee_pos;
             ti.linear() = (Eigen::AngleAxisd(ee_rot[2], Eigen::Vector3d::UnitZ())
@@ -111,7 +113,7 @@ public:
             tf.linear() = (Eigen::AngleAxisd(g->y, Eigen::Vector3d::UnitZ())
                         * Eigen::AngleAxisd(g->p, Eigen::Vector3d::UnitY())
                         * Eigen::AngleAxisd(g->r, Eigen::Vector3d::UnitX())).toRotationMatrix();
-            res = compute_and_send_arc_trajectory(model_, q, ti, tf, g->time, 0.2, publisher);
+            res = compute_and_send_arc_trajectory(model_, q, ti, tf, g->time, 0.01, publisher);
         } else {
             ROS_ERROR("Unimplemented");
             return;
@@ -119,7 +121,6 @@ public:
         
         if(res.second){
             ROS_INFO_STREAM("Inverse kinematics succeded, q: " << res.first.transpose());
-            compute_and_send_trajectory(q, res.first, g->time, FREQ, publisher);
             // update the current configuration
             this->q = res.first;
             this->ee_pos = Eigen::Vector3d(g->X, g->Y, g->Z);

@@ -12,43 +12,46 @@
 /// @param ds distance between two consecutive points on the arc
 /// @return the points on the arc
 std::vector<Eigen::Vector3d> compute_arc_points(Eigen::Vector3d p1, Eigen::Vector3d p2, Eigen::Vector3d p3, double ds) {
-    // calculate the circle's center and radius
-    Eigen::Vector3d a = p2 - p1;
-    Eigen::Vector3d b = p3 - p2;
-    Eigen::Vector3d c = p1 - p3;
+    double eps = 1e-6;
+    double deltaZ12 = fabs(p1(2) - p2(2));
+    double deltaZ23 = fabs(p2(2) - p3(2));
+    assert(deltaZ12<eps && deltaZ23<eps);
 
-    double d = 2 * (a.x() * (b.y() - c.y()) + b.x() * (c.y() - a.y()) + c.x() * (a.y() - b.y()));
+    Eigen::Vector2d p1_2d = Eigen::Vector2d(p1(0), p1(1));
+    Eigen::Vector2d p2_2d = Eigen::Vector2d(p2(0), p2(1));
+    Eigen::Vector2d p3_2d = Eigen::Vector2d(p3(0), p3(1));
 
-    double ux = ((a.norm() * b.y() - a.norm() * c.y()) + (b.norm() * c.y() - b.norm() * a.y()) + (c.norm() * a.y() - c.norm() * b.y())) / d;
-    double uy = ((a.norm() * c.x() - a.norm() * b.x()) + (b.norm() * a.x() - b.norm() * c.x()) + (c.norm() * b.x() - c.norm() * a.x())) / d;
+    double d = 2 * (p1.x() * (p2.y() - p3.y()) + p2.x() * (p3.y() - p1.y()) + p3.x() * (p1.y() - p2.y()));
 
-    Eigen::Vector3d circle_center(ux, uy, p1.z());
-    double circle_radius = (p1 - circle_center).norm();
+    double ux = ((p1.x() * p1.x() + p1.y() * p1.y()) * (p2.y() - p3.y()) + 
+                 (p2.x() * p2.x() + p2.y() * p2.y()) * (p3.y() - p1.y()) + 
+                 (p3.x() * p3.x() + p3.y() * p3.y()) * (p1.y() - p2.y())) / d;
 
-    ROS_INFO_STREAM("circle_center: " << circle_center.transpose());
-    ROS_INFO_STREAM("circle_radius: " << circle_radius);
+    double uy = ((p1.x() * p1.x() + p1.y() * p1.y()) * (p3.x() - p2.x()) + 
+                 (p2.x() * p2.x() + p2.y() * p2.y()) * (p1.x() - p3.x()) + 
+                 (p3.x() * p3.x() + p3.y() * p3.y()) * (p2.x() - p1.x())) / d;
 
-    // calculate the start and end angles of the arc
-    Eigen::Vector3d start_vector = (p1 - circle_center).normalized();
-    Eigen::Vector3d end_vector = (p3 - circle_center).normalized();
-    double start_angle = atan2(start_vector.y(), start_vector.x());
-    double end_angle = atan2(end_vector.y(), end_vector.x());
+    Eigen::Vector2d center = Eigen::Vector2d(ux, uy);
+    double radius = (center - p1_2d).norm();
+    
 
-    if(start_angle > end_angle){
-        end_angle += 2 * M_PI;
+    // Calculate start and end angles
+    double start_angle = atan2(p1_2d(1) - center(1), p1_2d(0) - center(0));
+    double end_angle = atan2(p3_2d(1) - center(1), p3_2d(0) - center(0));
+
+    // Adjust angles for counterclockwise direction
+    if (start_angle < 0) start_angle += 2 * M_PI;
+    if (end_angle < 0) end_angle += 2 * M_PI;
+    if (start_angle > end_angle) end_angle += 2 * M_PI;
+
+    std::vector<Eigen::Vector3d> points = std::vector<Eigen::Vector3d>();
+    for (double theta = start_angle; theta <= end_angle; theta += ds / radius) {
+        Eigen::Vector2d point_2d = center + radius * Eigen::Vector2d(cos(theta), sin(theta));
+        Eigen::Vector3d point = Eigen::Vector3d(point_2d(0), point_2d(1), p1(2));
+        points.push_back(point);
     }
 
-    ROS_INFO_STREAM("start_angle: " << start_angle);
-    ROS_INFO_STREAM("end_angle: " << end_angle);
-
-    // generate the points on the arc
-    std::vector<Eigen::Vector3d> arc_points;
-    for (double angle = start_angle; angle <= end_angle; angle += ds / circle_radius) {
-        Eigen::Vector3d point = circle_center + circle_radius * Eigen::Vector3d(cos(angle), sin(angle), 0);
-        arc_points.push_back(point);
-    }
-
-    return arc_points;
+    return points;
 }
 
 
@@ -62,9 +65,9 @@ std::pair<Eigen::VectorXd, bool> compute_and_send_arc_trajectory(
     Eigen::Isometry3d tmiddle;
     tmiddle.translation() = Eigen::Vector3d(0.0, 0.4, (ti.translation()(2)+tf.translation()(2))/2.0);
     // rotation of tmiddle is half way between ti and tf
-    Eigen::Quaterniond q1(ti.rotation());
-    Eigen::Quaterniond q2(tf.rotation());
-    tmiddle.linear() = q1.slerp(0.5, q2).toRotationMatrix();
+    Eigen::Quaterniond start_rot(ti.rotation());
+    Eigen::Quaterniond end_rot(tf.rotation());
+    tmiddle.linear() = start_rot.slerp(0.5, end_rot).toRotationMatrix();
     ROS_INFO_STREAM("tmiddle: " << tmiddle.translation().transpose());
  
     // compute the normal of the plane containing the arc
@@ -77,8 +80,6 @@ std::pair<Eigen::VectorXd, bool> compute_and_send_arc_trajectory(
     Eigen::Matrix3d xy_to_plane = rotation.toRotationMatrix();
     // rotation matrix to rotate a point on the plane with the points of the trajectory to the xy plane
     Eigen::Matrix3d plane_to_xy = xy_to_plane.inverse();
-    ROS_INFO_STREAM("xy_to_plane: " << xy_to_plane);
-    ROS_INFO_STREAM("plane_to_xy: " << plane_to_xy);
 
     // generate the points on the arc
     std::vector<Eigen::Vector3d> arc_points = compute_arc_points(
@@ -88,22 +89,24 @@ std::pair<Eigen::VectorXd, bool> compute_and_send_arc_trajectory(
     // compute joint angles to send
     std::vector<Eigen::VectorXd> joint_positions = std::vector<Eigen::VectorXd>();
     Eigen::VectorXd prevq = q0;
-    int i=0;
-    for (Eigen::Vector3d point : arc_points) {
-        ROS_INFO_STREAM("point on xy plane: " << point.transpose());
+    for (int i=0; i<arc_points.size(); i++){
         // rotate the point to the normal plane
-        Eigen::Vector3d rotated_point = xy_to_plane * point;
-        ROS_INFO_STREAM("point on normal plane: " << rotated_point.transpose());
-        // compute the inverse kinematics, use a low precision for all the steps but the last one
-        float eps = i==arc_points.size()-1 ? 1e-6 : 1e-4;
-        std::pair<Eigen::VectorXd, bool> ik = inverse_kinematics(model, rotated_point, Eigen::Vector3d(0, -1.57, 1.57), prevq, eps, false);
+        Eigen::Vector3d rotated_point = xy_to_plane * arc_points[i];
+        // compute the inverse kinematics
+        // compute ee rotation by interpolating between ti and tf
+        // Eigen::Quaterniond rot = start_rot.slerp((double)i/(double)arc_points.size(), end_rot);
+        // Eigen::Vector3d rot_euler = rot.toRotationMatrix().eulerAngles(2, 1, 0);
+        // std::pair<Eigen::VectorXd, bool> ik = inverse_kinematics(model, rotated_point, rot_euler, prevq);
+        std::pair<Eigen::VectorXd, bool> ik = inverse_kinematics(model, rotated_point, Eigen::Vector3d(0, -1.57, 1.57), prevq);
         if (!ik.second) {
-            ROS_ERROR("Inverse kinematics failed at point (%f, %f, %f)", rotated_point.x(), rotated_point.y(), rotated_point.z());
+            // ROS_ERROR("Inverse kinematics failed at point (%f, %f, %f, %f, %f, %f)", 
+            //     rotated_point(0), rotated_point(1), rotated_point(2), 
+            //     rot_euler(0), rot_euler(1), rot_euler(2));
             return std::make_pair(Eigen::VectorXd(), false);
         }
         joint_positions.push_back(ik.first);
         prevq = ik.first;
-        i++;
+        ROS_INFO_STREAM(i);
     }
 
     ros::Rate rate = ros::Rate(time/joint_positions.size());

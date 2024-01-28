@@ -91,7 +91,7 @@ Eigen::Matrix3d euler_to_rotation_matrix(Eigen::Vector3d rpy){
             sin(y), cos(y),    0,
             0,      0,         1;
 
-    return Rx*(Ry*Rz);
+    return Rz*(Ry*Rx);
 }
 
 
