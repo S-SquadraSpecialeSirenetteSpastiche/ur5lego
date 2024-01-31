@@ -18,8 +18,8 @@ class MoveAction
 {
 protected:
     const std::string PUBLISHING_CHANNEL = "/arm_joint_position";
-    const float DT = 100;
-    // if Y is less than this and we want to move to the other side of the table
+    const float DT = 500;
+    // if Y start or Y end are less than this and we want to move to the other side of the table
     // we need to take measures to avoid the singularity in the center
     const float MIN_Y_FOR_NORMAL_TRAJECTORY = 0.3;
 
@@ -78,19 +78,9 @@ public:
     /// @param g the goal sent by the client
     void executeCB(const ur5lego::MoveGoalConstPtr &g){
         ROS_INFO_STREAM("Received goal: " << coordsToStr(g->X, g->Y, g->Z, g->r, g->p, g->y) << " to do in " << g->time << "s");
-        float time = g->time;   // must do this because g is read only
+        float time = g->time;   // must do this because g is read only and I might want to change it later
 
-        if(center_singularity(curr_pos(0), curr_pos(1), g->X, g->Y)){
-            // mirror q1[0] over the negative y axis, then cap it so it so it doesn't rotate the wrong way
-            // and we reduce the linkeliness of having to go back later when the actual motion will be done
-            ROS_INFO_STREAM("Motion through the center singularity detected, rotating shoulder pan first");
-            Eigen::VectorXd q1 = q;
-            q1[0] = std::max(-q1[0] - M_PI, -M_PI*3.0/4.0);
-            compute_and_send_trajectory(q, q1, time/2.0, DT, publisher);
-            q = q1;
-            time /= 2.0; // we have used the first half of the time to rotate the shoulder pan, so we halve the time to complete the motion
-        }
-
+        // compute the inverse kinematics
         std::pair<Eigen::VectorXd, bool> res;
         if (cache_enabled) {
             res = inverse_kinematics(model_, Eigen::Vector3d(g->X, g->Y, g->Z), Eigen::Vector3d(g->r, g->p, g->y), cache);
@@ -99,9 +89,19 @@ public:
         }
 
         if(res.second){
-            ROS_INFO_STREAM("Inverse kinematics succeded, q: " << res.first.transpose());
-            compute_and_send_trajectory(q, res.first, time, DT, publisher);
-            q = res.first;
+            Eigen::VectorXd q1 = res.first;
+            ROS_INFO_STREAM("Inverse kinematics succeded, q: " << q1.transpose());
+            if(center_singularity(curr_pos(0), curr_pos(1), g->X, g->Y)){
+                ROS_INFO_STREAM("Motion through the center singularity detected");
+                Eigen::VectorXd q01 = q;    // joints for the intermediat motion to avoid center singularity
+                q01[0] = q1[0];             // start by only moving the shoulder pan to get to the right side
+                compute_and_send_trajectory(q, q01, time/2.0, DT, publisher);
+                q = q01;
+                time /= 2.0; // we have used the first half of the time to rotate the shoulder pan, so we halve the time to complete the motion
+                sleep(0.5);  // sleep for a short time so that the real robot can compensate the inertia
+            }
+            compute_and_send_trajectory(q, q1, time, DT, publisher);
+            q = q1;
             curr_pos = Eigen::Vector3d(g->X, g->Y, g->Z);
             curr_rot = Eigen::Vector3d(g->r, g->p, g->y);
         } else {
@@ -125,7 +125,7 @@ private:
     bool center_singularity(float currX, float currY, float desX, float desY){
         // we go trough the singularity if we move to the other side of the table: currX*desX<0
         // and the y coordinate of the middle point is close to the robot: (currY+desY)/2.0 < 0.4
-        return (currX*desX < 0 && (currY+desY)/2.0 < MIN_Y_FOR_NORMAL_TRAJECTORY);
+        return (currX*desX < 0 && currY < MIN_Y_FOR_NORMAL_TRAJECTORY && desY < MIN_Y_FOR_NORMAL_TRAJECTORY);
     }
 };
 
