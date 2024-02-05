@@ -3,40 +3,43 @@
 #include <fstream>
 #include <sstream>
 
-
-Cache parse_cache(const std::string& filepath) {
+Cache parse_cache(const std::vector<std::string>& filepaths) {
     Cache cache;
 
-    std::ifstream file(filepath);
-    if (!file.is_open()) {
-        return cache;
-    }
-
-    std::string line;
-    while (std::getline(file, line)) {
-        std::istringstream iss(line);
-        double x, y, z;
-        double q0, q1, q2, q3, q4, q5;
-
-        // If a line is broken skip it
-        if (!(iss >> x >> y >> z >> q0 >> q1 >> q2 >> q3 >> q4 >> q5)) {
+    for (const auto& filepath : filepaths) {
+        std::ifstream file(filepath);
+        if (!file.is_open()) {
             continue;
         }
 
-        Point3D point;
-        point.x = x;
-        point.y = y;
-        point.z = z;
-        Eigen::VectorXd q(6);
-        q << q0, q1, q2, q3, q4, q5;
+        std::string line;
+        while (std::getline(file, line)) {
+            std::istringstream iss(line);
+            double x, y, z;
+            double q0, q1, q2, q3, q4, q5;
 
-        cache.emplace_back(point, q);
+            // If a line is broken skip it
+            if (!(iss >> x >> y >> z >> q0 >> q1 >> q2 >> q3 >> q4 >> q5)) {
+                continue;
+            }
+
+            Point3D point;
+            point.x = x;
+            point.y = y;
+            point.z = z;
+            Eigen::VectorXd q(6);
+            q << q0, q1, q2, q3, q4, q5;
+
+            cache.emplace_back(point, q);
+        }
+
+        file.close();
     }
-
-    file.close();
 
     return cache;
 }
+
+
 
 
 Eigen::VectorXd find_closest(const Cache& cache, double X, double Y, double Z) {
