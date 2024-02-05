@@ -18,7 +18,7 @@ class MoveAction
 {
 protected:
     const std::string PUBLISHING_CHANNEL = "/arm_joint_position";
-    const float DT = 500;
+    const float FREQ = 500;
     // if Y start or Y end are less than this and we want to move to the other side of the table
     // we need to take measures to avoid the singularity in the center
     const float MIN_Y_FOR_NORMAL_TRAJECTORY = 0.2;
@@ -58,12 +58,16 @@ public:
         curr_pos = Eigen::Vector3d(-0.150661, 0.164984, 0.366207);
         curr_rot = Eigen::Vector3d(0.35143, -1.31318, 2.81847);
 
-        generate_cache();
-
-        cache = parse_cache(ros::package::getPath("ur5lego") + "/data/ik_cache.txt");
-        if (cache.empty()) {
-            ROS_WARN("Error while parsing cache file, continuing without");
-            cache_enabled = false;
+        // load cache object
+        if(cache_enabled){
+            std::vector<std::string> cache_paths;
+            cache_paths.push_back(ros::package::getPath("ur5lego") + "/data/ik_cache.txt");
+            cache_paths.push_back(ros::package::getPath("ur5lego") + "/data/ik_cache_extra.txt");
+            cache = parse_cache(cache_paths);
+            if (cache.empty()) {
+                ROS_WARN("Error while parsing cache file, continuing without");
+                cache_enabled = false;
+            }
         }
 
         pinocchio::Data data(model_);
@@ -75,7 +79,7 @@ public:
     {
     }
 
-    /// @brief callback for the action server
+    /// @brief callback for the action server, this is the starting point of each motion
     /// @param g the goal sent by the client
     void executeCB(const ur5lego::MoveGoalConstPtr &g){
         ROS_INFO_STREAM("Received goal: " << coordsToStr(g->X, g->Y, g->Z, g->r, g->p, g->y) << " to do in " << g->time << "s");
@@ -94,24 +98,18 @@ public:
             ROS_INFO_STREAM("Inverse kinematics succeded, q: " << q1.transpose());
             if(center_singularity(curr_pos(0), curr_pos(1), g->X, g->Y)){
                 ROS_INFO_STREAM("Motion through the center singularity detected");
-                Eigen::VectorXd q01 = q;    // joints for the intermediat motion to avoid center singularity
-                // quick hack to make sure the rotation is always forwards
-                // if the rotation is really big we just move halfway and figure it out later
-                // TODO: we can rotate a max of PI - std::numeric_limits<float>::epsilon() radiants at a time without problems
-                if(abs(q1[0] - q[0]) < M_PI){
-                    q01[0] = q1[0];
-                } else {
-                    q01[0] = (q1[0]+q01[0])/2.0;
-                }
-                compute_and_send_trajectory(q, q01, time/2.0, DT, publisher);
+                Eigen::VectorXd q01 = q;
+                q01[0] = get_intermediate_shoulder_pan(q[0], q1[0]);
+                compute_and_send_trajectory(q, q01, time/2.0, FREQ, publisher);
                 q = q01;
                 time /= 2.0; // we have used the first half of the time to rotate the shoulder pan, so we halve the time to complete the motion
                 sleep(0.5);  // sleep for a short time so that the real robot can compensate the inertia
             }
-            compute_and_send_trajectory(q, q1, time, DT, publisher);
+            compute_and_send_trajectory(q, q1, time, FREQ, publisher);
             q = q1;
             curr_pos = Eigen::Vector3d(g->X, g->Y, g->Z);
             curr_rot = Eigen::Vector3d(g->r, g->p, g->y);
+            // save_position();
         } else {
             ROS_WARN("Inverse kinematics failed");
         }
@@ -136,28 +134,35 @@ private:
         return (currX*desX < 0 && currY < MIN_Y_FOR_NORMAL_TRAJECTORY && desY < MIN_Y_FOR_NORMAL_TRAJECTORY);
     }
 
-    /// @brief generates the cache file, used to speed up the inverse kinematics
-    void generate_cache(){
-        std::string cache_file = ros::package::getPath("ur5lego") + "/data/ik_cache.txt";
-        std::ofstream cache_stream(cache_file, std::ios::out | std::ios::trunc);
+    /// @brief computes the value of the shoulder pan to rotate in order to avoid the singularity in the center
+    /// @param start the current value of the shoulder pan
+    /// @param end the value of the shoulder pan we want to reach
+    /// @return the value of the shoulder pan to rotate in order to avoid the singularity in the center
+    /// and to get as close as possible to the end value
+    double get_intermediate_shoulder_pan(double start, double end){
+        double diff = end - start;
+        if (diff > M_PI) diff -= 2 * M_PI;
+        else if (diff < -M_PI) diff += 2 * M_PI;
+
+        // if the difference is less than PI we can go there directly, otherwise we do a motion as big as possible
+        if (abs(diff) < M_PI) {
+            return end;
+        } else {
+            return start + M_PI + std::numeric_limits<double>::epsilon() * (diff > 0) ? -1 : 1;
+        }
+    }
+
+    /// @brief saves the current position and orientation in the cache file and the current cache object
+    void save_position(){
+        Point3D pos = {curr_pos(0), curr_pos(1), curr_pos(2)};
+        cache.push_back(std::make_pair(pos, q));
+
+        std::string cache_file = ros::package::getPath("ur5lego") + "/data/ik_cache_extra.txt";
+        std::ofstream cache_stream(cache_file, std::ios::out | std::ios::app);
         if (!cache_stream.is_open()) {
             ROS_WARN_STREAM("Error while opening cache file " << cache_file);
         }
-        for(float z = 0.4; z <= 0.6; z += 0.1){
-            for(float y = 0.2; y <= 0.5; y += 0.1){
-                for(float x = -0.5; x <= 0.5; x += 0.1){
-                    if(x*x+y*x < 0.3*0.3) continue;    // skip the points too close to the center of the robot
-                    std::pair<Eigen::VectorXd, bool> res = inverse_kinematics_without_cache(model_, Eigen::Vector3d(x, y, z), Eigen::Vector3d(0, -M_PI/2, M_PI/2), q);
-                    if(res.second){
-                        cache_stream << x << " " << y << " " << z << " " << res.first.transpose() << std::endl;
-                        q = res.first;
-                    } else {
-                        ROS_WARN_STREAM("Inverse kinematics failed for " << x << " " << y << " " << z);
-                        cache_stream << x << " " << y << " " << z << " " << "NaN NaN NaN NaN NaN NaN" << std::endl;
-                    }
-                }
-            }
-        }
+        cache_stream << curr_pos(0) << " " << curr_pos(1) << " " << curr_pos(2) << " " << q.transpose() << std::endl;
         cache_stream.close();
     }
 };

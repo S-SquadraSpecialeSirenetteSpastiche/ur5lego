@@ -11,6 +11,6 @@ struct Point3D {
 
 typedef std::vector<std::pair<Point3D, Eigen::VectorXd>> Cache;
 
-Cache parse_cache(const std::string& filepath);
+Cache parse_cache(const std::vector<std::string>& filepaths);
 
 Eigen::VectorXd find_closest(const Cache& data, double X, double Y, double Z);
