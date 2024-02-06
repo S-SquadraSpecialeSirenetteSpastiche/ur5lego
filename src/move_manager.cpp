@@ -34,77 +34,77 @@ MoveManager::MoveManager(){
     fixed_pos.orientation.z = (_Float64)(1.57);
 
     //positions where each type of lego should be moved to
-    X1_Y1_Z2_Pose.position.x = (_Float32)(0.45);
+    X1_Y1_Z2_Pose.position.x = (_Float32)(-0.45);
     X1_Y1_Z2_Pose.position.y = (_Float32)(0.40);
     X1_Y1_Z2_Pose.position.z = (_Float32)(0.40);
     X1_Y1_Z2_Pose.orientation.x = (_Float64)(0);
     X1_Y1_Z2_Pose.orientation.y = (_Float64)(-1.57);
     X1_Y1_Z2_Pose.orientation.z = (_Float64)(1.57);
 
-    X1_Y2_Z1_Pose.position.x = (_Float32)(0.40);
+    X1_Y2_Z1_Pose.position.x = (_Float32)(-0.38);
     X1_Y2_Z1_Pose.position.y = (_Float32)(0.40);
     X1_Y2_Z1_Pose.position.z = (_Float32)(0.40);
     X1_Y2_Z1_Pose.orientation.x = (_Float64)(0);
     X1_Y2_Z1_Pose.orientation.y = (_Float64)(-1.57);
     X1_Y2_Z1_Pose.orientation.z = (_Float64)(1.57);
 
-    X1_Y2_Z2_Pose.position.x = (_Float32)(0.35);
+    X1_Y2_Z2_Pose.position.x = (_Float32)(-0.30);
     X1_Y2_Z2_Pose.position.y = (_Float32)(0.40);
     X1_Y2_Z2_Pose.position.z = (_Float32)(0.40);
     X1_Y2_Z2_Pose.orientation.x = (_Float64)(0);
     X1_Y2_Z2_Pose.orientation.y = (_Float64)(-1.57);
     X1_Y2_Z2_Pose.orientation.z = (_Float64)(1.57);
 
-    X1_Y2_Z2_CHAMFER_Pose.position.x = (_Float32)(0.45);
+    X1_Y2_Z2_CHAMFER_Pose.position.x = (_Float32)(-0.45);
     X1_Y2_Z2_CHAMFER_Pose.position.y = (_Float32)(0.30);
     X1_Y2_Z2_CHAMFER_Pose.position.z = (_Float32)(0.40);
     X1_Y2_Z2_CHAMFER_Pose.orientation.x = (_Float64)(0);
     X1_Y2_Z2_CHAMFER_Pose.orientation.y = (_Float64)(-1.57);
     X1_Y2_Z2_CHAMFER_Pose.orientation.z = (_Float64)(1.57);
 
-    X1_Y2_Z2_TWINFILLET_Pose.position.x = (_Float32)(0.40);
+    X1_Y2_Z2_TWINFILLET_Pose.position.x = (_Float32)(-0.38);
     X1_Y2_Z2_TWINFILLET_Pose.position.y = (_Float32)(0.30);
     X1_Y2_Z2_TWINFILLET_Pose.position.z = (_Float32)(0.40);
     X1_Y2_Z2_TWINFILLET_Pose.orientation.x = (_Float64)(0);
     X1_Y2_Z2_TWINFILLET_Pose.orientation.y = (_Float64)(-1.57);
     X1_Y2_Z2_TWINFILLET_Pose.orientation.z = (_Float64)(1.57);
 
-    X1_Y3_Z2_Pose.position.x = (_Float32)(0.35);
+    X1_Y3_Z2_Pose.position.x = (_Float32)(-0.3);
     X1_Y3_Z2_Pose.position.y = (_Float32)(0.30);
     X1_Y3_Z2_Pose.position.z = (_Float32)(0.40);
     X1_Y3_Z2_Pose.orientation.x = (_Float64)(0);
     X1_Y3_Z2_Pose.orientation.y = (_Float64)(-1.57);
     X1_Y3_Z2_Pose.orientation.z = (_Float64)(1.57);
 
-    X1_Y3_Z2_FILLET_Pose.position.x = (_Float32)(0.4);
+    X1_Y3_Z2_FILLET_Pose.position.x = (_Float32)(-0.45);
     X1_Y3_Z2_FILLET_Pose.position.y = (_Float32)(0.2);
     X1_Y3_Z2_FILLET_Pose.position.z = (_Float32)(0.4);
     X1_Y3_Z2_FILLET_Pose.orientation.x = (_Float64)(0);
     X1_Y3_Z2_FILLET_Pose.orientation.y = (_Float64)(-1.57);
     X1_Y3_Z2_FILLET_Pose.orientation.z = (_Float64)(1.57);
     
-    X1_Y4_Z1_Pose.position.x = (_Float32)(0.40);
+    X1_Y4_Z1_Pose.position.x = (_Float32)(-0.38);
     X1_Y4_Z1_Pose.position.y = (_Float32)(0.20);
     X1_Y4_Z1_Pose.position.z = (_Float32)(0.40);
     X1_Y4_Z1_Pose.orientation.x = (_Float64)(0);
     X1_Y4_Z1_Pose.orientation.y = (_Float64)(-1.57);
     X1_Y4_Z1_Pose.orientation.z = (_Float64)(1.57);
 
-    X1_Y4_Z2_Pose.position.x = (_Float32)(0.35);
+    X1_Y4_Z2_Pose.position.x = (_Float32)(-0.30);
     X1_Y4_Z2_Pose.position.y = (_Float32)(0.20);
     X1_Y4_Z2_Pose.position.z = (_Float32)(0.40);
     X1_Y4_Z2_Pose.orientation.x = (_Float64)(0);
     X1_Y4_Z2_Pose.orientation.y = (_Float64)(-1.57);
     X1_Y4_Z2_Pose.orientation.z = (_Float64)(1.57);
     
-    X2_Y2_Z2_Pose.position.x = (_Float32)(0.45);
+    X2_Y2_Z2_Pose.position.x = (_Float32)(-0.45);
     X2_Y2_Z2_Pose.position.y = (_Float32)(0.10);
     X2_Y2_Z2_Pose.position.z = (_Float32)(0.40);
     X2_Y2_Z2_Pose.orientation.x = (_Float64)(0);
     X2_Y2_Z2_Pose.orientation.y = (_Float64)(-1.57);
     X2_Y2_Z2_Pose.orientation.z = (_Float64)(1.57);
 
-    X2_Y2_Z2_FILLET_Pose.position.x = (_Float32)(0.35);
+    X2_Y2_Z2_FILLET_Pose.position.x = (_Float32)(-0.35);
     X2_Y2_Z2_FILLET_Pose.position.y = (_Float32)(0.10);
     X2_Y2_Z2_FILLET_Pose.position.z = (_Float32)(0.40);
     X2_Y2_Z2_FILLET_Pose.orientation.x = (_Float64)(0);
@@ -135,13 +135,13 @@ MoveManager::MoveManager(){
     height_list[X1_Y3_Z2] = 0.036;           
     height_list[X1_Y3_Z2_FILLET] = 0.036;
     height_list[X1_Y4_Z1] = 0.018;           
-    height_list[X1_Y4_Z2] = 0.0;
-    height_list[X2_Y2_Z2] = 0.0;
+    height_list[X1_Y4_Z2] = 0.036;
+    height_list[X2_Y2_Z2] = 0.036;
     height_list[X2_Y2_Z2_FILLET] = 0.036;
 
     ///current height of each lego stack
     for(int i=0; i<NUM_LEGO_TYPES; i++){
-        current_height[i] = 0.0;
+        current_height[i] = 0.03;
     }
 }   
 
@@ -255,7 +255,7 @@ void MoveManager::grab(ur5lego::GripperGoal goal, bool grab, Lego type){
             goal.finger = 65.0;
         }
         else{
-            goal.finger = 35.0;
+            goal.finger = 37.0;
         }
     }else{
         goal.finger = 70.0;
@@ -326,7 +326,16 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         goalSetter(position_list[lego_type], goal);
         goalSender(goal);
         
-        //lower the brick
+        //lower the brick just above the stack
+        goalSetter(position_list[lego_type].position.x,
+                     position_list[lego_type].position.y, 
+                     position_list[lego_type].position.z + d - current_height[lego_type]-0.03, //lower brick just above the stack
+                     position_list[lego_type].orientation.x, 
+                     position_list[lego_type].orientation.y, 
+                     position_list[lego_type].orientation.z, 
+                     goal);
+        goalSender(goal);
+        // lower it and release the brick
         goalSetter(position_list[lego_type].position.x,
                      position_list[lego_type].position.y, 
                      position_list[lego_type].position.z + d - current_height[lego_type], //lower brick
