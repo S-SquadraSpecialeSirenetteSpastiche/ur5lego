@@ -6,8 +6,12 @@
 #include <actionlib/client/terminal_state.h>
 #include <ur5lego/MoveAction.h>
 #include <ur5lego/GripperAction.h>
+#include <std_msgs/String.h>
 #include "ur5lego/Pose.h"
+#include "ur5lego/BlockPosition.h"
 #include "Eigen/Dense"
+#include "queue"
+
 #include "queue"
 
 #define NUM_LEGO_TYPES 11

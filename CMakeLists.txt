@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
     gazebo_ros
     std_msgs
     ros_impedance_controller
+    message_generation
 )
 
 find_package(gazebo REQUIRED)
@@ -32,12 +33,23 @@ add_action_files(
     FILES Move.action Gripper.action
 )
 
+add_service_files(
+    FILES
+    BlockPosition.srv
+)
+
 generate_messages(
-    DEPENDENCIES actionlib_msgs std_msgs geometry_msgs
+    DEPENDENCIES 
+    actionlib_msgs 
+    std_msgs 
+    geometry_msgs
 )
 
 catkin_package(
-    CATKIN_DEPENDS actionlib_msgs roslib message_runtime
+    CATKIN_DEPENDS 
+    actionlib_msgs 
+    roslib 
+    message_runtime
 )
 
 include_directories(

@@ -1,12 +1,3 @@
-#include <ros/ros.h> 
-#include <actionlib/client/simple_action_client.h>
-#include <actionlib/client/terminal_state.h>
-#include <ur5lego/MoveAction.h>
-#include <ur5lego/GripperAction.h>
-#include <std_msgs/String.h>
-#include "geometry_msgs/Pose.h"
-#include "ur5lego/Pose.h"
-#include "queue"
 #include "include/move_manager.h"
 
 using namespace ros;
@@ -279,7 +270,7 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
 
     //start action
     if(!pos_msgs.empty()){
-        ur5lego::Pose msg = positionConverter(pos_msgs.front());
+        ur5lego::Pose msg = *(pos_msgs.front());
         ur5lego::MoveGoal goal;
         ur5lego::GripperGoal hand;
         
