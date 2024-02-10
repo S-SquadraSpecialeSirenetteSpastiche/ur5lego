@@ -18,14 +18,14 @@ bool positionSetup(ur5lego::BlockPosition::Request  &req, ur5lego::BlockPosition
   result.orientation.x = 0.0;
   result.orientation.y = 0.0;
   result.orientation.z = 0.0;
-  res.position = result;
+  res.pose = result;
 
   return true;
 }
 
 int main(int argc, char **argv){
 
-  init(argc, argv, "camera_publisher");
+  init(argc, argv, "vision_publisher");
 
   ROS_DEBUG("Ready to transmit positions");
 

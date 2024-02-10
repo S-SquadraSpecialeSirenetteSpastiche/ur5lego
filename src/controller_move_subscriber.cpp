@@ -6,7 +6,7 @@
 
 using namespace ros;
 
-std::queue<ur5lego::Pose::ConstPtr> pos_msgs;
+std::queue<ur5lego::Pose> pos_msgs;
 
 int main(int argc, char **argv){
 
@@ -23,7 +23,7 @@ int main(int argc, char **argv){
     while(ok()){
         // call the service to get the position of the lego
         if(client.call(req)){
-            ur5lego::Pose::ConstPtr pose = *req.response.pose;
+            ur5lego::Pose pose = req.response.pose;
             pos_msgs.push(pose);
         }
         mg.actionPlanner(pos_msgs);

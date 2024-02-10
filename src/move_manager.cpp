@@ -266,11 +266,11 @@ void MoveManager::grab(ur5lego::GripperGoal goal, bool grab, Lego type){
 }*/
 
 
-void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
+void MoveManager::actionPlanner(queue<ur5lego::Pose> &pos_msgs){
 
     //start action
     if(!pos_msgs.empty()){
-        ur5lego::Pose msg = *(pos_msgs.front());
+        ur5lego::Pose msg = pos_msgs.front();
         ur5lego::MoveGoal goal;
         ur5lego::GripperGoal hand;
         

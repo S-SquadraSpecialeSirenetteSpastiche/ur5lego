@@ -64,7 +64,7 @@ class MoveManager {
     void goalSetter(ur5lego::Pose msg, ur5lego::MoveGoal & goal);
     void goalSender(ur5lego::MoveGoal & goal);
     void grab(ur5lego::GripperGoal goal, bool grab, Lego type);
-    void actionPlanner(std::queue<ur5lego::Pose::ConstPtr> &pos_msgs);
+    void actionPlanner(std::queue<ur5lego::Pose> &pos_msgs);
 };
 
 #endif
