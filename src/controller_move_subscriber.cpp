@@ -14,7 +14,7 @@ int main(int argc, char **argv){
     MoveManager mg;
     NodeHandle nh;
 
-    ServiceClient client = nh.serviceClient<ur5lego::Pose>("get_position");
+    ServiceClient client = nh.serviceClient<ur5lego::BlockPosition>("get_position");
 
     ROS_DEBUG_STREAM("controller ready");
     ur5lego::BlockPosition req;
