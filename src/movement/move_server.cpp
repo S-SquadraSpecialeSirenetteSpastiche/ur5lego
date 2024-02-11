@@ -81,6 +81,20 @@ public:
     {
     }
 
+    Eigen::Vector3f check_params(const ur5lego::MoveGoalConstPtr &g){
+        Eigen::Vector3f res;
+        res << g->X, g->Y, g->Z;
+        if(res[1] < -0.1){
+            res[1] = -0.1;
+        }
+        if(res[2]>0.62){
+            res[2] = 0.62;
+        }
+        else if(res[2]<0.2){
+            res[2] = 0.2;
+        }
+        return res;
+    }
     /// @brief callback for the action server, this is the starting point of each motion
     /// @param g the goal sent by the client
     void executeCB(const ur5lego::MoveGoalConstPtr &g){
@@ -89,16 +103,17 @@ public:
 
         // compute the inverse kinematics
         std::pair<Eigen::VectorXd, bool> res;
+        Eigen::Vector3f checked_params = check_params(g);
         if (cache_enabled) {
-            res = inverse_kinematics(model_, Eigen::Vector3d(g->X, g->Y, g->Z), Eigen::Vector3d(g->r, g->p, g->y), cache);
+            res = inverse_kinematics(model_, Eigen::Vector3d(checked_params[0], checked_params[1], checked_params[2]), Eigen::Vector3d(g->r, g->p, g->y), cache);
         } else {
-            res = inverse_kinematics_without_cache(model_, Eigen::Vector3d(g->X, g->Y, g->Z), Eigen::Vector3d(g->r, g->p, g->y), q);
+            res = inverse_kinematics_without_cache(model_, Eigen::Vector3d(checked_params[0], checked_params[1], checked_params[2]), Eigen::Vector3d(g->r, g->p, g->y), q);
         }
 
         if(res.second){
             Eigen::VectorXd q1 = res.first;
             ROS_INFO_STREAM("Inverse kinematics succeded, q: " << q1.transpose());
-            if(center_singularity(curr_pos(0), curr_pos(1), g->X, g->Y)){
+            if(center_singularity(curr_pos(0), curr_pos(1), checked_params[0], checked_params[1])){
                 ROS_INFO_STREAM("Motion through the center singularity detected");
                 Eigen::VectorXd q01 = q;
                 q01[0] = get_intermediate_shoulder_pan(q[0], q1[0]);
@@ -109,7 +124,7 @@ public:
             }
             compute_and_send_trajectory(q, q1, time, FREQ, publisher);
             q = q1;
-            curr_pos = Eigen::Vector3d(g->X, g->Y, g->Z);
+            curr_pos = Eigen::Vector3d(checked_params[0], checked_params[1], checked_params[2]);
             curr_rot = Eigen::Vector3d(g->r, g->p, g->y);
             // save_position();
         } else {
