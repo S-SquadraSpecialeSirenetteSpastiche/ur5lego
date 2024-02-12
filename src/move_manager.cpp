@@ -257,15 +257,10 @@ void MoveManager::grab(ur5lego::GripperGoal goal, bool grab, Lego type){
     gripper_client ->waitForResult(ros::Duration(30.0));
 }
 
-/*void MoveManager::gripperMovementDirection(_Float64 previous_msg,_Float64 msg){
-    if(|previous_msg - msg| < |previous_msg - (msg + 3.14)|){
-        //move clockwise
-    }else{
-        //move counterclockwise
-    }
-}*/
-
-
+/// @brief Given a queue of positions, check if it's empty, 
+///        if not, plans all the action the robot has to perform 
+///        to move a block in the given position to its destination.
+/// @param pos_msgs 
 void MoveManager::actionPlanner(queue<ur5lego::Pose> &pos_msgs){
 
     //start action
@@ -294,7 +289,7 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose> &pos_msgs){
         where the brick is located. The robot will move above the brick, then
         it will descend and grab the brick, then it will lift the brick and
         move it to the fixed position, then it will lower the brick and release
-        it. Finally, it will return to the homing position.
+        it.
         */
         //move above the object
         goalSetter(X,Y,Z-d,r,p,y, goal);
@@ -303,7 +298,7 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose> &pos_msgs){
         //descend and grab the object
         goalSetter(X,Y,Z,r,p,y, goal);
         goalSender(goal);
-        grab(hand, true, lego_type); //TODO: uncomment this line when the ur5 upward movement is fixed
+        grab(hand, true, lego_type);
 
         
         //lift the brick
@@ -320,13 +315,14 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose> &pos_msgs){
         //lower the brick just above the stack
         goalSetter(position_list[lego_type].position.x,
                      position_list[lego_type].position.y, 
-                     position_list[lego_type].position.z + d - current_height[lego_type]-0.03, //lower brick just above the stack
+                     position_list[lego_type].position.z + d - current_height[lego_type]-0.03, //lower brick just above the stack for more precision
                      position_list[lego_type].orientation.x, 
                      position_list[lego_type].orientation.y, 
                      position_list[lego_type].orientation.z, 
                      goal);
         goalSender(goal);
-        // lower it and release the brick
+
+        // lower the brick and release it
         goalSetter(position_list[lego_type].position.x,
                      position_list[lego_type].position.y, 
                      position_list[lego_type].position.z + d - current_height[lego_type], //lower brick
@@ -335,19 +331,15 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose> &pos_msgs){
                      position_list[lego_type].orientation.z, 
                      goal);
         goalSender(goal);
-        //release the brick
-        grab(hand, false, lego_type); //TODO: uncomment this line when the ur5 upward movement is fixed
-        current_height[lego_type] += height_list[lego_type]; //update current height of the stack
+        grab(hand, false, lego_type); 
 
+        current_height[lego_type] += height_list[lego_type]; //update current height of the stack of the specific lego type
+
+        // raise the arm to avoid collision with the next brick
         goalSetter(position_list[lego_type], goal);
         goalSender(goal);
-
-        /*
-        //return to homing position
-        goalSetter(homing, goal);
-        goalSender(goal);
         //end action
-        */
+
         ROS_INFO_STREAM("Action completed.");
         pos_msgs.pop();
     }
