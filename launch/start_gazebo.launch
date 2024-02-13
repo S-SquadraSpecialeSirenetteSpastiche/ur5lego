@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<launch>    
+    <!-- send the robot XML to param server TODO: questo va in spawn_robot.launch -->
+    <param name="robot_description" command="$(find xacro)/xacro '$(find ur5lego)/robot_description/ur5.urdf.xacro'
+        joint_limit_params:=config/joint_limits.yaml
+        kinematics_params:=config/default_kinematics.yaml
+        physical_params:=config/physical_parameters.yaml
+        visual_params:=config/visual_parameters.yaml
+        transmission_hw_interface:=hardware_interface/PositionJointInterface
+        safety_limits:=false
+        safety_pos_margin:=0.15
+        safety_k_position:=20
+        gazebo:=true
+        gripper:=false"	
+    />
+
+    <!-- launch gzserver -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch" >
+		<arg name="world_name" value="$(find ur5lego)/worlds/tavolo.world"/>
+        <arg name="paused" default="false" />
+    </include>
+</launch>

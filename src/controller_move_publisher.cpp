@@ -17,7 +17,6 @@ void cameraCallback(const ur5lego::Pose::ConstPtr & msg){
 }
 
 
-
 int main(int argc, char **argv){
 
   //srand(time(NULL));
