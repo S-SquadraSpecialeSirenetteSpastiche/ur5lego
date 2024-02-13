@@ -59,7 +59,7 @@ class MoveManager {
 
 
     MoveManager();
-    ur5lego::Pose positionConverter(ur5lego::Pose::ConstPtr msg);
+    ur5lego::Pose positionConverter(ur5lego::Pose & msg);
     void goalSetter(_Float32 X, _Float32 Y, _Float32 Z, _Float64 r, _Float64 p, _Float64 y, ur5lego::MoveGoal & goal);
     void goalSetter(ur5lego::Pose msg, ur5lego::MoveGoal & goal);
     void goalSender(ur5lego::MoveGoal & goal);

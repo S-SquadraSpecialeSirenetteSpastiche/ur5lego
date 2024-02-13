@@ -1,4 +1,4 @@
-#include "include/move_manager.h"
+#include "../include/move_manager.h"
 
 using namespace ros;
 using namespace std;
@@ -140,9 +140,9 @@ MoveManager::MoveManager(){
 /// @brief this function converts the coordinates of the brick from the camera frame to the robot frame
 /// @param msg the message containing the coordinates of the brick in the camera frame
 /// @return converted_msg the message containing the coordinates of the brick in the robot
-ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
+ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose& msg){
     ur5lego::Pose converted_msg;
-    ROS_DEBUG("Converting Camera coordinates to Robot coordinates");
+    ROS_INFO_STREAM("Converting Camera coordinates to Robot coordinates" << std::endl);
     Eigen::Vector3d T; //translation vector
     T << 0.47, 0.45, 0.65;
     Eigen::Matrix4d M; //roto-translation matrix
@@ -159,22 +159,22 @@ ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
     Eigen::Vector3d camera_pov_orientation; 
     Eigen::Vector4d robot_pov_coordinates;
 
-    camera_pov_coordinates << msg->position.x, msg->position.y, msg->position.z, 1;
-    camera_pov_orientation << msg->orientation.x, msg->orientation.y, msg->orientation.z;
+    camera_pov_coordinates << msg.position.x, msg.position.y, msg.position.z, 1;
+    camera_pov_orientation << msg.orientation.x, msg.orientation.y, msg.orientation.z;
 
     Eigen::Matrix3d roll_matrix;
     roll_matrix << 1, 0, 0,
-                    0, cos(msg->orientation.x), -sin(msg->orientation.x),
-                    0, sin(msg->orientation.x), cos(msg->orientation.x);
+                    0, cos(msg.orientation.x), -sin(msg.orientation.x),
+                    0, sin(msg.orientation.x), cos(msg.orientation.x);
 
     /*
     Eigen::Matrix3d pitch_matrix;
-    pitch_matrix << cos(msg->orientation.y), 0, sin(msg->orientation.y),
+    pitch_matrix << cos(msg.orientation.y), 0, sin(msg.orientation.y),
                     0, 1, 0,
-                    -sin(msg->orientation.y), 0, cos(msg->orientation.y);
+                    -sin(msg.orientation.y), 0, cos(msg.orientation.y);
     Eigen::Matrix3d yaw_matrix;
-    yaw_matrix << cos(msg->orientation.z), -sin(msg->orientation.z), 0,
-                    sin(msg->orientation.z), cos(msg->orientation.z), 0,
+    yaw_matrix << cos(msg.orientation.z), -sin(msg.orientation.z), 0,
+                    sin(msg.orientation.z), cos(msg.orientation.z), 0,
                     0, 0, 1;
     Eigen::Matrix3d RPY = roll_matrix * pitch_matrix * yaw_matrix;
     Eigen::Matrix3d rotated_rpy = R * RPY;
@@ -184,9 +184,9 @@ ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
 
     double roll = 0; //atan2(rotated_rpy(2,1), rotated_rpy(2,2));
     double pitch = -1.57; //atan2(-rotated_rpy(2,0), sqrt(pow(rotated_rpy(2,1),2) + pow(rotated_rpy(2,2),2)));
-    double yaw = -(msg->orientation.z); //atan2(rotated_rpy(1,0), rotated_rpy(0,0));
+    double yaw = -(msg.orientation.z); //atan2(rotated_rpy(1,0), rotated_rpy(0,0));
 
-    converted_msg.legoType = msg->legoType;
+    converted_msg.legoType = msg.legoType;
     converted_msg.position.x = (_Float32)(robot_pov_coordinates[0]);
     converted_msg.position.y = (_Float32)(robot_pov_coordinates[1]);
     converted_msg.position.z = (_Float32)(robot_pov_coordinates[2] - 0.05);
@@ -194,7 +194,7 @@ ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
     converted_msg.orientation.y = (_Float64)(pitch);
     converted_msg.orientation.z = (_Float64)(yaw);
 
-    ROS_DEBUG_STREAM("Lego position wrt robot: X:" << converted_msg.position.x << 
+    ROS_INFO_STREAM("Lego position wrt robot: X:" << converted_msg.position.x << 
         " Y:" << converted_msg.position.y << " Z:" << converted_msg.position.z);
 
     return converted_msg;
@@ -265,7 +265,14 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose> &pos_msgs){
 
     //start action
     if(!pos_msgs.empty()){
-        ur5lego::Pose msg = pos_msgs.front();
+        ur5lego::Pose msg; //positionConverter(pos_msgs.front());
+        msg.position.x = 0.2;
+        msg.position.y = 0.3;
+        msg.position.z = 0.5;
+        msg.orientation.x = 0.0;
+        msg.orientation.y = 0.0;
+        msg.orientation.z = 1.57;
+        //msg = positionConverter(msg);
         ur5lego::MoveGoal goal;
         ur5lego::GripperGoal hand;
         
@@ -282,7 +289,7 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose> &pos_msgs){
         _Float64 p = msg.orientation.y;
         _Float64 y = msg.orientation.z;
 
-        ROS_INFO("Posizione blocco: X:%f ,Y:%f , Z:%f", X, Y, Z );
+        ROS_INFO("Posizione blocco: X:%f ,Y:%f , Z:%f, R:%f, P:%f, Y:%f", X, Y, Z, r, p, y );
         
         /*
         the following block of code is used to move the robot to the position

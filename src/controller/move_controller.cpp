@@ -1,5 +1,5 @@
 #include "ros/ros.h"
-#include "include/move_manager.h"
+#include "../include/move_manager.h"
 #include "queue"
 #include "ur5lego/Pose.h"
 #include "ur5lego/BlockPosition.h"

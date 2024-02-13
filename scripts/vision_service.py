@@ -8,12 +8,12 @@ import rospy
 def handle_block_position(req):
     rospy.loginfo("Returning block position")
     msg = Pose()
-    msg.position.x = 1
-    msg.position.y = 2
-    msg.position.z = 3
-    msg.orientation.x = 0
-    msg.orientation.y = 0
-    msg.orientation.z = 0
+    msg.position.x = 0.0
+    msg.position.y = 0.0
+    msg.position.z = 0.0
+    msg.orientation.x = 0.0
+    msg.orientation.y = 0.0
+    msg.orientation.z = 0.0
     return BlockPositionResponse(msg)
 
 def block_position_server():
