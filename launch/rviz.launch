@@ -1,0 +1,11 @@
+<!-- rviz_display.launch -->
+<launch>
+
+  <!-- Start RViz -->
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find ur5lego)/data/config.rviz -f world" respawn="false" output="screen"/>
+
+  <!-- Delay to allow RViz to start before displaying point cloud -->
+  <rosparam param="point_cloud_topic">/ur5/zed_node/point_cloud/cloud_registered</rosparam>
+  <node pkg="rospy_tutorials" type="talker" name="rviz_talker"/>
+
+</launch>
