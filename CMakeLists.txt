@@ -77,7 +77,7 @@ target_link_libraries(ur5lego_position_publisher ${catkin_LIBRARIES})
 target_link_libraries(ur5lego_gripper_server ${catkin_LIBRARIES} math trajectory)
 
 catkin_install_python(
-    PROGRAMS src/vision/image_saver.py src/vision/change_angles.py src/vision/image_cropper.py src/vision/prova2.py
+    PROGRAMS src/vision/image_cropper.py src/vision/vision.py
     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -91,6 +91,10 @@ add_dependencies(ur5lego_move_subscriber ${ur5lego_EXPORTED_TARGETS})
 
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
+
+install(DIRECTORY data/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/data
 )
 
 install(DIRECTORY blocks_description/

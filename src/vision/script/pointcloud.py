@@ -41,16 +41,7 @@ camera2table_translation = np.array([-0.2099953293800354, 0.2773451805114746, 0.
 crop_offset = [672, 399]
 
 class PointCloudHandler:
-
-    # nodo prova.py
-    # angela fa girare il suo nodo che fa cose
-    # service call a parte di visione
-    # chiama la parte di pointcloud per trovare posizione e orientamento(questa nodo)
-    # ritorna la service call
-
     def __init__(self, names):
-        # rospy.init_node('pointcloud_handler')
-
         self.pointcloud_sub = rospy.Subscriber('/ur5/zed_node/point_cloud/cloud_registered', PointCloud2, self.receive_pointcloud)
         self.pointcloud_msg = None
         self.names = names
@@ -94,23 +85,6 @@ class PointCloudHandler:
         
         box_pointcloud = self.filter_pointcloud(np.array(box_pointcloud), 0.05)
         
-        # change coordinates of the point wrt the table frame
-        # for i in range(len(box_pointcloud)):
-        #     box_pointcloud[i] = self.camera_to_table(box_pointcloud[i])
-
-        box_pointcloud2 = []
-
-        # for x in range(650, 1300):
-        #     for y in range(400, 1000):
-        # for x in range(box[0] - 400, box[2] + 100):
-        #     for y in range(box[1] - 100, box[3] + 400):
-                # for point in pc2.read_points(self.pointcloud_msg, field_names=['x', 'y', 'z'], uvs=[(int(x), int(y))], skip_nans=True):
-                #     box_pointcloud2.append(np.array(point))
-        # for i in range(len(box_pointcloud2)):
-        #     box_pointcloud2[i] = self.camera_to_table(box_pointcloud2[i])
-
-        box_pointcloud2 = np.array(box_pointcloud2)
-
         source, target = self.get_pointclouds(box_pointcloud=box_pointcloud, block_type=block_type)
 
         # find transformation of the block in the box
@@ -130,40 +104,17 @@ class PointCloudHandler:
         response.orientation.y = pitch
         response.orientation.z = yaw
         response.legoType = block_type
-
-        print(response.position)
-        print(response.orientation)
         
         return response
 
     def get_pointclouds(self, box_pointcloud, block_type):
-        # pointcloud already cropped and in the table frame?
         # load pointclouds
-        # target: list -> pointcloud 
         target = o3d.geometry.PointCloud()
         target.points = o3d.utility.Vector3dVector(box_pointcloud)
         target.transform(self.camera_to_table())
-
-        # make this part valid for all block_type
-        # source: stl -> pointcloud
         
-        #mesh = o3d.io.read_triangle_mesh(self.get_stl_path(block_type))
-        mesh = o3d.io.read_triangle_mesh("/home/utente/ros_ws/install/share/ur5lego/blocks_description/stl/X1-Y4-Z2.stl")
+        mesh = o3d.io.read_triangle_mesh(self.get_stl_path(block_type))
         source = mesh.sample_points_uniformly(number_of_points=10000)
-
-        # transf = np.matrix([[0, -1, 0, x_c[0] + robot2table_translation[0]], 
-        #                     [-0.499, 0, -0.866, x_c[1] + robot2table_translation[1]], 
-        #                     [0.866, 0, -0.499, x_c[2] + robot2table_translation[2]],
-        #                     [0.0, 0.0, 0.0, 1.0]])
-
-        # source.transform(transf)
-        
-        # translation = np.matrix([[1, 0, 0, camera2table_translation[0]], 
-        #                     [0, 1, 0, camera2table_translation[1]], 
-        #                     [0, 0, 1, camera2table_translation[2]],
-        #                     [0.0, 0.0, 0.0, 1.0]])
-
-        
 
         rotation = np.matrix([[0.0, -1.0, 0.0, 0.0], 
                               [1.0, 0.0, 0.0, 0.0], 
@@ -171,14 +122,8 @@ class PointCloudHandler:
                               [0.0, 0.0, 0.0, 1.0]])
                             
         source.transform(rotation)
-        # source.transform(translation)
         
-        # camera_mesh = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=[0, 0, 0])
-        # table_mesh = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.3, origin=camera2table)
-        # camera = camera_mesh.sample_points_uniformly(number_of_points=1000)
-        # table = table_mesh.sample_points_uniformly(number_of_points=1000)
-
-        draw_registration_result(source=source, target=target, transformation=np.identity(4))
+        # draw_registration_result(source=source, target=target, transformation=np.identity(4))
         return source, target
 
     def find_transformation(self, source, target):
@@ -188,13 +133,12 @@ class PointCloudHandler:
         # match fpfh features using ransac algorithm for global registration
         transf_guess = execute_global_registration(source_down, target_down,
                                                     source_fpfh, target_fpfh)
-        draw_registration_result(source_down, target_down, transf_guess.transformation)
+        # draw_registration_result(source_down, target_down, transf_guess.transformation)
 
         # refine the result using icp, starting from the ransac result
         result_icp = refine_registration(source_down, target_down, source_fpfh, target_fpfh, transf_guess.transformation)
         
-        print(result_icp)
-        draw_registration_result(source, target, result_icp.transformation)
+        # draw_registration_result(source, target, result_icp.transformation)
         
         return result_icp.transformation
 
@@ -224,7 +168,7 @@ class PointCloudHandler:
     
     def get_stl_path(self, block_type):
         block_name = self.names[block_type]
-        print(block_name)
+        
         # Create an instance of the RosPack class
         rospack = rospkg.RosPack()
         # Check if a specific package exists
@@ -232,5 +176,5 @@ class PointCloudHandler:
         package_path = rospack.get_path(package_name)
         
         stl_path = os.path.join(package_path, 'blocks_description/stl', block_name + '.stl')
-        print(stl_path)
+        
         return stl_path
