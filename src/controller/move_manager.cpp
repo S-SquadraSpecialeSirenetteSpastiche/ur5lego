@@ -1,13 +1,4 @@
-#include <ros/ros.h> 
-#include <actionlib/client/simple_action_client.h>
-#include <actionlib/client/terminal_state.h>
-#include <ur5lego/MoveAction.h>
-#include <ur5lego/GripperAction.h>
-#include <std_msgs/String.h>
-#include "geometry_msgs/Pose.h"
-#include "ur5lego/Pose.h"
-#include "queue"
-#include "include/move_manager.h"
+#include "../include/move_manager.h"
 
 using namespace ros;
 using namespace std;
@@ -149,9 +140,9 @@ MoveManager::MoveManager(){
 /// @brief this function converts the coordinates of the brick from the camera frame to the robot frame
 /// @param msg the message containing the coordinates of the brick in the camera frame
 /// @return converted_msg the message containing the coordinates of the brick in the robot
-ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
+ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose& msg){
     ur5lego::Pose converted_msg;
-    ROS_DEBUG("Converting Camera coordinates to Robot coordinates");
+    ROS_INFO_STREAM("Converting Camera coordinates to Robot coordinates" << std::endl);
     Eigen::Vector3d T; //translation vector
     T << 0.47, 0.45, 0.65;
     Eigen::Matrix4d M; //roto-translation matrix
@@ -168,22 +159,22 @@ ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
     Eigen::Vector3d camera_pov_orientation; 
     Eigen::Vector4d robot_pov_coordinates;
 
-    camera_pov_coordinates << msg->position.x, msg->position.y, msg->position.z, 1;
-    camera_pov_orientation << msg->orientation.x, msg->orientation.y, msg->orientation.z;
+    camera_pov_coordinates << msg.position.x, msg.position.y, msg.position.z, 1;
+    camera_pov_orientation << msg.orientation.x, msg.orientation.y, msg.orientation.z;
 
     Eigen::Matrix3d roll_matrix;
     roll_matrix << 1, 0, 0,
-                    0, cos(msg->orientation.x), -sin(msg->orientation.x),
-                    0, sin(msg->orientation.x), cos(msg->orientation.x);
+                    0, cos(msg.orientation.x), -sin(msg.orientation.x),
+                    0, sin(msg.orientation.x), cos(msg.orientation.x);
 
     /*
     Eigen::Matrix3d pitch_matrix;
-    pitch_matrix << cos(msg->orientation.y), 0, sin(msg->orientation.y),
+    pitch_matrix << cos(msg.orientation.y), 0, sin(msg.orientation.y),
                     0, 1, 0,
-                    -sin(msg->orientation.y), 0, cos(msg->orientation.y);
+                    -sin(msg.orientation.y), 0, cos(msg.orientation.y);
     Eigen::Matrix3d yaw_matrix;
-    yaw_matrix << cos(msg->orientation.z), -sin(msg->orientation.z), 0,
-                    sin(msg->orientation.z), cos(msg->orientation.z), 0,
+    yaw_matrix << cos(msg.orientation.z), -sin(msg.orientation.z), 0,
+                    sin(msg.orientation.z), cos(msg.orientation.z), 0,
                     0, 0, 1;
     Eigen::Matrix3d RPY = roll_matrix * pitch_matrix * yaw_matrix;
     Eigen::Matrix3d rotated_rpy = R * RPY;
@@ -193,9 +184,9 @@ ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
 
     double roll = 0; //atan2(rotated_rpy(2,1), rotated_rpy(2,2));
     double pitch = -1.57; //atan2(-rotated_rpy(2,0), sqrt(pow(rotated_rpy(2,1),2) + pow(rotated_rpy(2,2),2)));
-    double yaw = -(msg->orientation.z); //atan2(rotated_rpy(1,0), rotated_rpy(0,0));
+    double yaw = -(msg.orientation.z); //atan2(rotated_rpy(1,0), rotated_rpy(0,0));
 
-    converted_msg.legoType = msg->legoType;
+    converted_msg.legoType = msg.legoType;
     converted_msg.position.x = (_Float32)(robot_pov_coordinates[0]);
     converted_msg.position.y = (_Float32)(robot_pov_coordinates[1]);
     converted_msg.position.z = (_Float32)(robot_pov_coordinates[2] - 0.05);
@@ -203,7 +194,7 @@ ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
     converted_msg.orientation.y = (_Float64)(pitch);
     converted_msg.orientation.z = (_Float64)(yaw);
 
-    ROS_DEBUG_STREAM("Lego position wrt robot: X:" << converted_msg.position.x << 
+    ROS_INFO_STREAM("Lego position wrt robot: X:" << converted_msg.position.x << 
         " Y:" << converted_msg.position.y << " Z:" << converted_msg.position.z);
 
     return converted_msg;
@@ -266,20 +257,22 @@ void MoveManager::grab(ur5lego::GripperGoal goal, bool grab, Lego type){
     gripper_client ->waitForResult(ros::Duration(30.0));
 }
 
-/*void MoveManager::gripperMovementDirection(_Float64 previous_msg,_Float64 msg){
-    if(|previous_msg - msg| < |previous_msg - (msg + 3.14)|){
-        //move clockwise
-    }else{
-        //move counterclockwise
-    }
-}*/
-
-
-void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
+/// @brief Given a queue of positions, check if it's empty, 
+///        if not, plans all the action the robot has to perform 
+///        to move a block in the given position to its destination.
+/// @param pos_msgs 
+void MoveManager::actionPlanner(queue<ur5lego::Pose> &pos_msgs){
 
     //start action
     if(!pos_msgs.empty()){
-        ur5lego::Pose msg = positionConverter(pos_msgs.front());
+        ur5lego::Pose msg; //positionConverter(pos_msgs.front());
+        msg.position.x = 0.2;
+        msg.position.y = 0.3;
+        msg.position.z = 0.5;
+        msg.orientation.x = 0.0;
+        msg.orientation.y = 0.0;
+        msg.orientation.z = 1.57;
+        //msg = positionConverter(msg);
         ur5lego::MoveGoal goal;
         ur5lego::GripperGoal hand;
         
@@ -296,14 +289,14 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         _Float64 p = msg.orientation.y;
         _Float64 y = msg.orientation.z;
 
-        ROS_INFO("Posizione blocco: X:%f ,Y:%f , Z:%f", X, Y, Z );
+        ROS_INFO("Posizione blocco: X:%f ,Y:%f , Z:%f, R:%f, P:%f, Y:%f", X, Y, Z, r, p, y );
         
         /*
         the following block of code is used to move the robot to the position
         where the brick is located. The robot will move above the brick, then
         it will descend and grab the brick, then it will lift the brick and
         move it to the fixed position, then it will lower the brick and release
-        it. Finally, it will return to the homing position.
+        it.
         */
         //move above the object
         goalSetter(X,Y,Z-d,r,p,y, goal);
@@ -312,7 +305,7 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         //descend and grab the object
         goalSetter(X,Y,Z,r,p,y, goal);
         goalSender(goal);
-        grab(hand, true, lego_type); //TODO: uncomment this line when the ur5 upward movement is fixed
+        grab(hand, true, lego_type);
 
         
         //lift the brick
@@ -329,13 +322,14 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
         //lower the brick just above the stack
         goalSetter(position_list[lego_type].position.x,
                      position_list[lego_type].position.y, 
-                     position_list[lego_type].position.z + d - current_height[lego_type]-0.03, //lower brick just above the stack
+                     position_list[lego_type].position.z + d - current_height[lego_type]-0.03, //lower brick just above the stack for more precision
                      position_list[lego_type].orientation.x, 
                      position_list[lego_type].orientation.y, 
                      position_list[lego_type].orientation.z, 
                      goal);
         goalSender(goal);
-        // lower it and release the brick
+
+        // lower the brick and release it
         goalSetter(position_list[lego_type].position.x,
                      position_list[lego_type].position.y, 
                      position_list[lego_type].position.z + d - current_height[lego_type], //lower brick
@@ -344,19 +338,15 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose::ConstPtr> &pos_msgs){
                      position_list[lego_type].orientation.z, 
                      goal);
         goalSender(goal);
-        //release the brick
-        grab(hand, false, lego_type); //TODO: uncomment this line when the ur5 upward movement is fixed
-        current_height[lego_type] += height_list[lego_type]; //update current height of the stack
+        grab(hand, false, lego_type); 
 
+        current_height[lego_type] += height_list[lego_type]; //update current height of the stack of the specific lego type
+
+        // raise the arm to avoid collision with the next brick
         goalSetter(position_list[lego_type], goal);
         goalSender(goal);
-
-        /*
-        //return to homing position
-        goalSetter(homing, goal);
-        goalSender(goal);
         //end action
-        */
+
         ROS_INFO_STREAM("Action completed.");
         pos_msgs.pop();
     }

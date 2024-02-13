@@ -6,8 +6,12 @@
 #include <actionlib/client/terminal_state.h>
 #include <ur5lego/MoveAction.h>
 #include <ur5lego/GripperAction.h>
+#include <std_msgs/String.h>
 #include "ur5lego/Pose.h"
+#include "ur5lego/BlockPosition.h"
 #include "Eigen/Dense"
+#include "queue"
+
 #include "queue"
 
 #define NUM_LEGO_TYPES 11
@@ -55,12 +59,12 @@ class MoveManager {
 
 
     MoveManager();
-    ur5lego::Pose positionConverter(ur5lego::Pose::ConstPtr msg);
+    ur5lego::Pose positionConverter(ur5lego::Pose & msg);
     void goalSetter(_Float32 X, _Float32 Y, _Float32 Z, _Float64 r, _Float64 p, _Float64 y, ur5lego::MoveGoal & goal);
     void goalSetter(ur5lego::Pose msg, ur5lego::MoveGoal & goal);
     void goalSender(ur5lego::MoveGoal & goal);
     void grab(ur5lego::GripperGoal goal, bool grab, Lego type);
-    void actionPlanner(std::queue<ur5lego::Pose::ConstPtr> &pos_msgs);
+    void actionPlanner(std::queue<ur5lego::Pose> &pos_msgs);
 };
 
 #endif

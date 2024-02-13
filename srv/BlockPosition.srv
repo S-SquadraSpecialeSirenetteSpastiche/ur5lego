@@ -1,0 +1,5 @@
+#request fields
+bool call
+---
+#response fields
+ur5lego/Pose pose

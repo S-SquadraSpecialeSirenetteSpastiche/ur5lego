@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
     gazebo_ros
     std_msgs
     ros_impedance_controller
+    message_generation
 )
 
 find_package(gazebo REQUIRED)
@@ -36,12 +37,20 @@ add_action_files(
     FILES Move.action Gripper.action
 )
 
+add_service_files(
+    FILES
+    BlockPosition.srv
+)
+
 generate_messages(
     DEPENDENCIES actionlib_msgs std_msgs sensor_msgs geometry_msgs # Or other packages containing msgs
 )
 
 catkin_package(
-    CATKIN_DEPENDS actionlib_msgs roslib message_runtime
+    CATKIN_DEPENDS 
+    actionlib_msgs 
+    roslib 
+    message_runtime
 )
 
 include_directories(
@@ -57,7 +66,7 @@ add_library(inverse_kinematics src/movement/inverse_kinematics.cpp)
 add_library(trajectory src/movement/trajectory_planner.cpp)
 add_library(link_controller_plugin SHARED  src/link_controller_plugin.cpp)
 add_library(cache_handler src/movement/cache_handler.cpp)
-add_library(ur5lego_move_manager STATIC src/move_manager.cpp)
+add_library(ur5lego_move_manager STATIC src/controller/move_manager.cpp)
 
 target_link_libraries(trajectory ${catkin_LIBRARIES} math inverse_kinematics)
 target_link_libraries(link_controller_plugin ${catkin_LIBRARIES} ${GAZEBO_LIBRARIES})
@@ -82,13 +91,9 @@ catkin_install_python(
     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-add_executable(ur5lego_move_publisher src/controller_move_publisher.cpp)
-target_link_libraries(ur5lego_move_publisher ${catkin_LIBRARIES})
-add_dependencies(ur5lego_move_publisher ${ur5lego_EXPORTED_TARGETS})
-
-add_executable(ur5lego_move_subscriber src/controller_move_subscriber.cpp)
-target_link_libraries(ur5lego_move_subscriber ur5lego_move_manager ${catkin_LIBRARIES})
-add_dependencies(ur5lego_move_subscriber ${ur5lego_EXPORTED_TARGETS})
+add_executable(ur5lego_move_controller src/controller/move_controller.cpp)
+target_link_libraries(ur5lego_move_controller ur5lego_move_manager ${catkin_LIBRARIES})
+add_dependencies(ur5lego_move_controller ${ur5lego_EXPORTED_TARGETS})
 # target_link_libraries(move_client_example ${catkin_LIBRARIES})
 
 install(DIRECTORY launch/
