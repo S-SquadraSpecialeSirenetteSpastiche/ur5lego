@@ -8,8 +8,6 @@
     <include file="$(find ur5lego)/launch/start_gazebo.launch"></include>
     
     <include file="$(find ur5lego)/launch/image_handler.launch"></include>
-    <include file="$(find ur5lego)/launch/move_subscriber.launch"></include>
-    <include file="$(find ur5lego)/launch/move_publisher.launch"></include>
 
     <!-- start the move server and its wrapper-->
     <node name="move_server" pkg="ur5lego" type="ur5lego_move_server"/>

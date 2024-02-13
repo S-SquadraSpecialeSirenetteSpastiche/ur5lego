@@ -60,7 +60,7 @@ MoveManager::MoveManager(){
 ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose::ConstPtr msg){
     ur5lego::Pose converted_msg;
     ROS_DEBUG("Converting Camera coordinates to Robot coordinates");
-    Eigen::Vector3d T; //translation vector
+    Eigen::Vector3d T; //translation vectorSS
     T << 0.48, 0.43, 0.6;
     Eigen::Matrix4d M; //roto-translation matrix
     M << 0, -1, 0, T[0],

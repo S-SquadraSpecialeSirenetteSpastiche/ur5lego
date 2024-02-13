@@ -1,4 +1,4 @@
-<!-- usage: roslaunch ur5lego spawn_block.launch block_name:=block1 block_type:=X1-Y1-Z2 r:=255 g:=0 b:=0 -->
+<!-- usage: roslaunch ur5lego spawn_block.launch block_name:=block1 block_type:=X1-Y1-Z2-->
 
 <launch>
     <arg name="block_type" />

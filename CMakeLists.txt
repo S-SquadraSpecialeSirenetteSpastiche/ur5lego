@@ -4,6 +4,8 @@ project(ur5lego)
 set(pinocchio_DIR "/opt/openrobots/lib/cmake/pinocchio/")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I/usr/include/eigen3 -w")
 
+catkin_python_setup()
+
 find_package(catkin REQUIRED COMPONENTS 
     roscpp 
     rospy 
@@ -20,7 +22,6 @@ find_package(gazebo REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS roscpp rospy roslib pinocchio actionlib_msgs actionlib sensor_msgs cv_bridge)
 
-catkin_python_setup()
 link_directories(${GAZEBO_LIBRARY_DIRS})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 
@@ -76,7 +77,7 @@ target_link_libraries(ur5lego_position_publisher ${catkin_LIBRARIES})
 target_link_libraries(ur5lego_gripper_server ${catkin_LIBRARIES} math trajectory)
 
 catkin_install_python(
-    PROGRAMS src/vision/image_saver.py src/vision/change_angles.py src/vision/image_cropper.py src/vision/prova2.py src/vision/frame.py
+    PROGRAMS src/vision/image_saver.py src/vision/change_angles.py src/vision/image_cropper.py src/vision/prova2.py
     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -87,3 +88,11 @@ add_dependencies(ur5lego_move_publisher ${ur5lego_EXPORTED_TARGETS})
 add_executable(ur5lego_move_subscriber src/controller_move_subscriber.cpp)
 target_link_libraries(ur5lego_move_subscriber ur5lego_move_manager ${catkin_LIBRARIES})
 add_dependencies(ur5lego_move_subscriber ${ur5lego_EXPORTED_TARGETS})
+
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
+
+install(DIRECTORY blocks_description/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/blocks_description
+)
