@@ -24,6 +24,9 @@ int main(int argc, char **argv){
         // call the service to get the position of the lego
         if(client.call(req)){
             ur5lego::Pose pose = req.response.pose;
+            if (pose.position.x > 0.72){
+                continue;
+            }
             pos_msgs.push(pose);
         }
         mg.actionPlanner(pos_msgs);
