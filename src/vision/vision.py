@@ -64,6 +64,9 @@ def handle_block_position(req):
 @smart_inference_mode()
 def run(msg):
     imgsz = (416, 416)
+
+    boxes = []
+    labels = []
     
     # Dataloader
     try:
@@ -99,9 +102,6 @@ def run(msg):
         with dt[2]:
             pred = non_max_suppression(pred, conf_thres = 0.40, iou_thres = 0.25, max_det=1000)
 
-        boxes = []
-        labels = []
-
         # Process predictions
         for i, det in enumerate(pred):
             seen += 1
@@ -129,7 +129,7 @@ def run(msg):
                     boxes.append([int(i) for i in box])
                     labels.append(c) # names[c] if the name is required
                     lego = names[c]
-                    print(f"detected object: {lego}")
+                    print(f"detected object: {lego}, {conf}")
     
             # Stream results
             
