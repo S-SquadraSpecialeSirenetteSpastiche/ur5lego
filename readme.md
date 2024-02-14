@@ -18,7 +18,6 @@ Then you can start the robot controller with:
 ```bash
 roslaunch ur5lego ur5lego.launch
 ```
-NOTE: ur5lego.launch will be the final launch file, for now start inverse_kinematics.launch
 
 
 ## Moving the robot
