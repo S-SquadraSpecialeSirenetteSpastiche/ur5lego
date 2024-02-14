@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 
-import argparse
-import csv
-import math
+from __future__ import print_function
 import os
-import platform
-import sys
 from pathlib import Path
 import numpy as np
 
@@ -23,14 +19,17 @@ from utils.general import (
     Profile,
     check_img_size,
     non_max_suppression,
-    scale_boxes
+    scale_boxes,
+    cv2
 )
 from utils.augmentations import letterbox
 from utils.torch_utils import select_device, smart_inference_mode
 from script.pointcloud import PointCloudHandler
 import rospkg
+from ur5lego.srv import BlockPosition, BlockPositionResponse
 
 bridge = CvBridge()
+msg_saved = None
 
 rospack = rospkg.RosPack()
 # Check if a specific package exists
@@ -38,6 +37,29 @@ package_name = "ur5lego"
 package_path = rospack.get_path(package_name)
 
 weights_path = os.path.join(package_path, 'data/best.pt')
+
+def cb(msg):
+    global msg_saved
+    msg_saved = msg
+
+def handle_block_position(req):
+    rospy.loginfo("Returning block position")
+    global msg_saved
+    
+    if msg_saved is None:
+        print("nothing")
+        msg = Pose()
+        msg.position.y = 100000
+        return BlockPositionResponse(msg)        
+    msg = Pose()
+    msg = run(msg_saved)
+    print("yeee")
+    
+    if msg is None:
+        msg = Pose()
+        msg.position.y = 100000
+
+    return BlockPositionResponse(msg)
 
 @smart_inference_mode()
 def run(msg):
@@ -106,11 +128,14 @@ def run(msg):
 
                     boxes.append([int(i) for i in box])
                     labels.append(c) # names[c] if the name is required
+                    lego = names[c]
+                    print(f"detected object: {lego}")
     
             # Stream results
+            
             # im0 = annotator.result()
             # p = "detection"
-            # if platform.system() == "Linux" and p not in windows:
+            # if p not in windows:
             #     windows.append(p)
             #     cv2.namedWindow(str(p), cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)  # allow window resize (Linux)
             #     cv2.resizeWindow(str(p), im0.shape[1], im0.shape[0])
@@ -118,18 +143,20 @@ def run(msg):
             # cv2.waitKey(0)
 
     if len(boxes) > 0:
-        print("entrato")
         ph = PointCloudHandler(names)
-        ph.detect_block(boxes, labels)
-
-    rospy.signal_shutdown('detection finished')
+        return ph.detect_block(boxes, labels)
+    else:
+        return None
 
 if __name__ == "__main__":
     try:
         rospy.init_node('lego_detector')
 
         # Subscribe to the image topic
-        image_sub = rospy.Subscriber('/image_cropped', Image, run)
+        image_sub = rospy.Subscriber('/image_cropped', Image, cb)
+        s = rospy.Service("/get_position", BlockPosition, handle_block_position)
+        
+        rospy.loginfo("Ready to return block position")
 
         rospy.spin()
     except rospy.ROSInterruptException:
