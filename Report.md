@@ -12,12 +12,53 @@ The source code for the project is at https://github.com/FrancescoPiazzi/ur5lego
 We divided our code into three main components: perception, controller, and motion, the first one is in charge to detect the type and position of the blocks, the second plan the motion, and the third to execute each movement.
 The vision and motion components offer services to the controller component, vision component provides a ROS service that returns the blocks, while the motion component is implemented using a ROS action server, the controller interacts with these two components to plan the motion
 # Perception
-In order to retrieve data we used a ZED Depth-camera placed on the side of the workbench. The ZED camera sends shots which are then cropped and fed to YOLO. From the bounding-boxes around the recognized objects drawn by the model we retrieve the central pixel coordinates. With these we can get the complete coordinates of the block using the depth sensor of the camera which are then transformed into world frame coordinates.
-In order to classify the blocks we opted for a machine-learning-based solution, specifically YOLO, a pre trained fast R-CNN model which is then fine-tuned on a synthetic dataset
+## Overview
+In order to retrieve data we used a ZED Stereo-camera placed on the side of the workbench. The ZED camera sends shots which are then cropped and fed to YOLOv5. Once the bounding box are created around the recognized objects, the data is sent to he module managing the pointcloud. The module will then get the pointcloud of the nearest bounding box, its pointcloud will get cleaned from furthest points of the background. A global registration algorithm is applied to get a approximative transformation of an hypotetical block with respect to the angle of the table. Thanks to this transformation ICP can be applied in order to obtain a more accuraate trasformation from the initial frame to the table frame and get a more precise position and orientation of the block.
+In order to classify the blocks we opted for a machine-learning-based solution, specifically YOLOv5, a pre trained fast R-CNN model which is then fine-tuned on a synthetic dataset.
+### Training
+We collect images from gazebo scene and labeled using Roboflow. After that we added a pre-existing dataset from Roboflow that provide a good number of real-world example. The result fed a pre-trained YOLOv5 model from ultralytics, trained trough the [notebook](https://colab.research.google.com/github/ultralytics/yolov5/blob/master/tutorial.ipynb) provided by ultralytics. 
+Even with a not so big amount of epochs(60) the result is still quite accurate with a precision of 98% on the training set.
+### Global registration
+The idea of this part is to give an approximated transformation of the block using Fast Global Registration([FGR](https://vladlen.info/papers/fast-global-registration.pdf)), provided by Open3d
+````
+result = o3d.pipelines.registration.registration_fgr_based_on_feature_matching(
+    source_down, target_down, source_fpfh, target_fpfh,
+    o3d.pipelines.registration.FastGlobalRegistrationOption(
+        maximum_correspondence_distance=distance_threshold
+    )
+)
+````
+This algorithm relies on the alignment of the surfaces more than on the matching of the feature point to point: this allow for better and consistent results than using RANSAC, other than being much faster, probably beacuse the pointcloud of the block on the table isn't complete and the random choice of the point in ransac doesn't allow a very good result.
+### ICP
+In order to get a better result for the transformation we use an ICP point to point algorithm provided by Open3d
+````
+result = o3d.pipelines.registration.registration_icp(
+    source, target, distance_threshold, transf_guess,
+    o3d.pipelines.registration.TransformationEstimationPointToPoint(),
+    o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=1000)
+)
+````
+The algorithm runs until the pointcloud are quite close or for a maximum of 1000 times and try each time to get a more accurate transformation that minimize the global distance.
+
 # Controller
 A master node is responsible of managing all the events, synchronizing the vision part and the motion of the robot. The node is implemented as a service client of the vision node and as an action client of the motion node, so that it can request a new block position only when needed and plan all the movements, sending each step one by one.
-The following graph represent how the system works and how the main node, communication happens through customized messages, services and actions.
-The master node communicate first with the vision node, requesting the position, orientation and the type of a block.
+The following graph represent how the nodes of the system works and how the main node interact with the others.
+Communication happens through customized messages, services and actions.
+![Ur5lego nodes](https://github.com/S-SquadraSpecialeSirenetteSpastiche/ur5lego/blob/master/images/node_workflow.png?raw=true)
+
+1. `move_controller`, the main node, request a new block position, orientation and type through the `get_position` service offered by `vision_service`.
+2. `vision_service` detect the bounding box of the nearest block to the camera and returns the data required.
+3. After recovering data of a new block the motion planning begins:
+	1. Reach the point above the object, by sending the coordinates to `move_server` and wait for result
+	2. Lower the robot to the object
+	3. Grab the block, by sending the coordinates to `gripper_server` and wait for result
+	4. Raise the bock and return to the same position as point 1
+	5. Take the block above the designated spot, according to the block type.
+	6. Lower the block and release it
+	7. Update the height of the stack of the specific block type
+4. Once the whole action is completed `move_controller` can star again, requesting a new block data to `vision_service`.
+![Workflow](https://github.com/S-SquadraSpecialeSirenetteSpastiche/ur5lego/blob/master/images/workflow.png?raw=true)
+
 # Motion
 ## Overview
 Once a motion is requested, the robot must complete it, as fast as requested and especially avoiding singularities. The node that handles the motion of the robot is implemented using a ROS action server, this was mainly so the client requesting the action could easily wait for it to complete before sending another.
