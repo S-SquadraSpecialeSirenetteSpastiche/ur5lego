@@ -14,7 +14,7 @@ int main(int argc, char **argv){
     MoveManager mg;
     NodeHandle nh;
 
-    ServiceClient client = nh.serviceClient<ur5lego::BlockPosition>("get_position");
+    ServiceClient client = nh.serviceClient<ur5lego::BlockPosition>("/get_position");
 
     ROS_DEBUG_STREAM("controller ready");
     ur5lego::BlockPosition req;
@@ -24,7 +24,11 @@ int main(int argc, char **argv){
         // call the service to get the position of the lego
         if(client.call(req)){
             ur5lego::Pose pose = req.response.pose;
-            pos_msgs.push(pose);
+
+            if (pose.position.y < 0.72) {
+                pos_msgs.push(pose);
+            }
+
         }
         mg.actionPlanner(pos_msgs);
     }

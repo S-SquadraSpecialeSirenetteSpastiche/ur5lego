@@ -92,9 +92,11 @@ class PointCloudHandler:
         
         print(transformation)
         translation = transformation[:3, 3]
-        roll = np.arctan2(transformation[1, 0], transformation[0, 0])
-        pitch = np.arcsin(-transformation[2, 0])
-        yaw = np.arctan2(transformation[2, 1], transformation[2, 2])
+
+        # Calculate pitch, yaw, and roll angles using trigonometric functions
+        pitch = np.arcsin(-transformation[1, 2])
+        roll = np.arctan2(transformation[1, 0] / np.cos(pitch), transformation[1, 1] / np.cos(pitch))
+        yaw = np.arctan2(transformation[0, 3] / np.cos(pitch), transformation[2, 2] / np.cos(pitch))
         
         response = Pose()
         response.position.x = translation[0]

@@ -265,14 +265,8 @@ void MoveManager::actionPlanner(queue<ur5lego::Pose> &pos_msgs){
 
     //start action
     if(!pos_msgs.empty()){
-        ur5lego::Pose msg; //positionConverter(pos_msgs.front());
-        msg.position.x = 0.2;
-        msg.position.y = 0.3;
-        msg.position.z = 0.5;
-        msg.orientation.x = 0.0;
-        msg.orientation.y = 0.0;
-        msg.orientation.z = 1.57;
-        //msg = positionConverter(msg);
+        ur5lego::Pose msg = positionConverter(pos_msgs.front());
+
         ur5lego::MoveGoal goal;
         ur5lego::GripperGoal hand;
         
