@@ -184,12 +184,12 @@ ur5lego::Pose MoveManager::positionConverter(ur5lego::Pose& msg){
 
     double roll = 0; //atan2(rotated_rpy(2,1), rotated_rpy(2,2));
     double pitch = -1.57; //atan2(-rotated_rpy(2,0), sqrt(pow(rotated_rpy(2,1),2) + pow(rotated_rpy(2,2),2)));
-    double yaw = -(msg.orientation.z); //atan2(rotated_rpy(1,0), rotated_rpy(0,0));
+    double yaw = 1.57 - (msg.orientation.z); //atan2(rotated_rpy(1,0), rotated_rpy(0,0));
 
     converted_msg.legoType = msg.legoType;
     converted_msg.position.x = (_Float32)(robot_pov_coordinates[0]);
     converted_msg.position.y = (_Float32)(robot_pov_coordinates[1]);
-    converted_msg.position.z = (_Float32)(robot_pov_coordinates[2] - 0.05);
+    converted_msg.position.z = (_Float32)(robot_pov_coordinates[2]); // for real robot - 0.05);
     converted_msg.orientation.x = (_Float64)(roll);
     converted_msg.orientation.y = (_Float64)(pitch);
     converted_msg.orientation.z = (_Float64)(yaw);

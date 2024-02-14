@@ -79,8 +79,8 @@ class JointPositionPublisher {
             else {
                 float gripper_millimeter_span = msg->data;
                 float gripper_angle; // asin((gripper_millimeter_span-350)/(2*100));
-                if(gripper_millimeter_span == 35.0){
-                    gripper_angle = -0.08;
+                if(gripper_millimeter_span == 37.0){
+                    gripper_angle = -0.1;
                 }
                 else{
                     gripper_angle = asin((gripper_millimeter_span-35)/(2*100));

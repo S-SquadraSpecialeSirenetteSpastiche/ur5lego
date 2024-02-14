@@ -80,7 +80,7 @@ add_executable(ur5lego_position_publisher src/movement/position_publisher.cpp)
 add_executable(ur5lego_gripper_server src/movement/gripper_server.cpp)
 # add_executable(move_client_example src/movement/move_client_example.cpp)
 
-target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES} pinocchio::pinocchio inverse_kinematics math trajectory cache_handler)
+target_link_libraries(ur5lego_move_server ${catkin_LIBRARIES} /opt/openrobots/lib/libpinocchio.so.2.6.10 inverse_kinematics math trajectory cache_handler)
 # target_link_libraries(ur5lego_send_homing_position ${catkin_LIBRARIES} trajectory)
 target_link_libraries(ur5lego_move_server_wrapper ${catkin_LIBRARIES})
 target_link_libraries(ur5lego_position_publisher ${catkin_LIBRARIES})
@@ -106,4 +106,29 @@ install(DIRECTORY data/
 
 install(DIRECTORY blocks_description/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/blocks_description
+)
+
+install(TARGETS trajectory
+ RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS link_controller_plugin
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS inverse_kinematics
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS ur5lego_gripper_server
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS ur5lego_move_server
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS ur5lego_move_server_wrapper
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS ur5lego_position_publisher
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS ur5lego_move_controller
+    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
